@@ -302,18 +302,21 @@ class SerdeObjectMultipartTest {
             <LastModified>2012-02-23T07:01:34.000Z</LastModified>
             <ETag>"3349DC700140D7F86A0784842780****"</ETag>
             <Size>6291456</Size>
+            <HashCrc64ecma>123</HashCrc64ecma>
             </Part>
             <Part>
             <PartNumber>2</PartNumber>
             <LastModified>2012-02-23T07:01:12.000Z</LastModified>
             <ETag>"3349DC700140D7F86A0784842780****"</ETag>
             <Size>6291456</Size>
+            <HashCrc64ecma>456</HashCrc64ecma>
             </Part>
             <Part>
             <PartNumber>5</PartNumber>
             <LastModified>2012-02-23T07:02:03.000Z</LastModified>
             <ETag>"7265F4D211B56873A381D321F586****"</ETag>
             <Size>1024</Size>
+            <HashCrc64ecma>789</HashCrc64ecma>
             </Part>
             </ListPartsResult>
         """.trimIndent()
@@ -329,14 +332,17 @@ class SerdeObjectMultipartTest {
         assertEquals("2012-02-23T07:01:34.000Z", result.parts?.get(0)?.lastModified)
         assertEquals("\"3349DC700140D7F86A0784842780****\"", result.parts?.get(0)?.eTag)
         assertEquals(6291456, result.parts?.get(0)?.size)
+        assertEquals("123", result.parts?.get(0)?.hashCrc64ecma)
         assertEquals(2, result.parts?.get(1)?.partNumber)
         assertEquals("2012-02-23T07:01:12.000Z", result.parts?.get(1)?.lastModified)
         assertEquals("\"3349DC700140D7F86A0784842780****\"", result.parts?.get(1)?.eTag)
         assertEquals(6291456, result.parts?.get(1)?.size)
+        assertEquals("456", result.parts?.get(1)?.hashCrc64ecma)
         assertEquals(5, result.parts?.get(2)?.partNumber)
         assertEquals("2012-02-23T07:02:03.000Z", result.parts?.get(2)?.lastModified)
         assertEquals("\"7265F4D211B56873A381D321F586****\"", result.parts?.get(2)?.eTag)
         assertEquals(1024, result.parts?.get(2)?.size)
+        assertEquals("789", result.parts?.get(2)?.hashCrc64ecma)
 
         // url encoding
         xml = """
@@ -354,18 +360,21 @@ class SerdeObjectMultipartTest {
             <LastModified>2012-02-23T07:01:34.000Z</LastModified>
             <ETag>"3349DC700140D7F86A0784842780****"</ETag>
             <Size>6291456</Size>
+            <HashCrc64ecma>123</HashCrc64ecma>
             </Part>
             <Part>
             <PartNumber>2</PartNumber>
             <LastModified>2012-02-23T07:01:12.000Z</LastModified>
             <ETag>"3349DC700140D7F86A0784842780****"</ETag>
             <Size>6291456</Size>
+            <HashCrc64ecma>456</HashCrc64ecma>
             </Part>
             <Part>
             <PartNumber>5</PartNumber>
             <LastModified>2012-02-23T07:02:03.000Z</LastModified>
             <ETag>"7265F4D211B56873A381D321F586****"</ETag>
             <Size>1024</Size>
+            <HashCrc64ecma>789</HashCrc64ecma>
             </Part>
             </ListPartsResult>
         """.trimIndent()
@@ -381,13 +390,16 @@ class SerdeObjectMultipartTest {
         assertEquals("2012-02-23T07:01:34.000Z", result.parts?.get(0)?.lastModified)
         assertEquals("\"3349DC700140D7F86A0784842780****\"", result.parts?.get(0)?.eTag)
         assertEquals(6291456, result.parts?.get(0)?.size)
+        assertEquals("123", result.parts?.get(0)?.hashCrc64ecma)
         assertEquals(2, result.parts?.get(1)?.partNumber)
         assertEquals("2012-02-23T07:01:12.000Z", result.parts?.get(1)?.lastModified)
         assertEquals("\"3349DC700140D7F86A0784842780****\"", result.parts?.get(1)?.eTag)
         assertEquals(6291456, result.parts?.get(1)?.size)
+        assertEquals("456", result.parts?.get(1)?.hashCrc64ecma)
         assertEquals(5, result.parts?.get(2)?.partNumber)
         assertEquals("2012-02-23T07:02:03.000Z", result.parts?.get(2)?.lastModified)
         assertEquals("\"7265F4D211B56873A381D321F586****\"", result.parts?.get(2)?.eTag)
         assertEquals(1024, result.parts?.get(2)?.size)
+        assertEquals("789", result.parts?.get(2)?.hashCrc64ecma)
     }
 }

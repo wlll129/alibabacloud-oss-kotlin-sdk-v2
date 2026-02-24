@@ -127,6 +127,7 @@ class ListPartsTest {
                         eTag = "eTag***"
                         size = 100
                         lastModified = "2012-02-24T08:42:32.000Z"
+                        hashCrc64ecma = "123"
                     }
                 )
                 bucket = "bucket1"
@@ -154,6 +155,7 @@ class ListPartsTest {
         assertEquals(1, result.parts?.first()?.partNumber)
         assertEquals("2012-02-24T08:42:32.000Z", result.parts?.first()?.lastModified)
         assertEquals("eTag***", result.parts?.first()?.eTag)
+        assertEquals("123", result.parts?.first()?.hashCrc64ecma)
 
         assertNotNull(result.headers)
         assertEquals(1, result.headers.size)
@@ -174,6 +176,7 @@ class ListPartsTest {
                     eTag = "eTag***"
                     size = 100
                     lastModified = "2012-02-24T08:42:32.000Z"
+                    hashCrc64ecma = "123"
                 }
             )
             bucket = "bucket1"
@@ -202,6 +205,7 @@ class ListPartsTest {
         assertEquals(1, result.parts?.first()?.partNumber)
         assertEquals("2012-02-24T08:42:32.000Z", result.parts?.first()?.lastModified)
         assertEquals("eTag***", result.parts?.first()?.eTag)
+        assertEquals("123", result.parts?.first()?.hashCrc64ecma)
 
         assertNotNull(result.headers)
         assertEquals(1, result.headers.size)

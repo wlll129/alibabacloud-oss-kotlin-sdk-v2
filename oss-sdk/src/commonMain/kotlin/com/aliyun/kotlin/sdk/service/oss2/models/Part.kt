@@ -24,6 +24,11 @@ public class Part(builder: Builder) {
      */
     public val size: Long? = builder.size
 
+    /**
+     * The 64-bit CRC value of the part.
+     */
+    public val hashCrc64ecma: String? = builder.hashCrc64ecma
+
     public constructor() : this(Builder())
 
     public companion object {
@@ -51,6 +56,11 @@ public class Part(builder: Builder) {
          * The size of the part.
          */
         public var size: Long? = null
+
+        /**
+         * The 64-bit CRC value of the part.
+         */
+        public var hashCrc64ecma: String? = null
 
         public fun build(): Part {
             return Part(this)

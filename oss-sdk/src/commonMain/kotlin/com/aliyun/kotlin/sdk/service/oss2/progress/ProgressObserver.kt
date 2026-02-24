@@ -5,10 +5,11 @@ import com.aliyun.kotlin.sdk.service.oss2.types.StreamObserver
 public class ProgressObserver(
     private val listener: ProgressListener,
     total: Long? = -1,
+    private var written: Long = 0
 ) : StreamObserver() {
 
     private val total: Long = total ?: -1
-    private var written: Long = 0
+
     private var lastWritten: Long = 0 // last written
 
     private fun notify(inc: Long) {

@@ -106,7 +106,7 @@ internal class DefaultOSSClient(
     config: ClientConfiguration,
     optFns: List<(ClientOptions) -> ClientOptions>? = null
 ) : OSSClient {
-    private val clientImpl = ClientImpl(config, optFns ?: listOf())
+    internal val clientImpl = ClientImpl(config, optFns ?: listOf())
 
     override fun close() {
         clientImpl.close()

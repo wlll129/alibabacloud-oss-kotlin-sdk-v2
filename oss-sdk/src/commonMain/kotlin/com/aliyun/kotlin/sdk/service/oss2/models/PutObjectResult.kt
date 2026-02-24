@@ -10,7 +10,7 @@ public class PutObjectResult(builder: Builder) : ResultModel(builder) {
      * This value is calculated based on the ECMA-182 standard.
      */
     public val hashCrc64ecma: Long?
-        get() = headers["x-oss-hash-crc64ecma"]?.toLong()
+        get() = headers["x-oss-hash-crc64ecma"]?.toULong()?.toLong()
 
     /**
      * Version of the object.
