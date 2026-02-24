@@ -31,6 +31,22 @@ public class GetObjectRequest(builder: Builder) : RequestModel(builder) {
         get() = headers["Range"]
 
     /**
+     * Specify standard behaviors to download data by range.
+     * If the value is "standard", the download behavior is modified when the specified range is not within the valid range.
+     * For an object whose size is 1,000 bytes:
+     * 1) If you set Range: bytes to 500-2000, the value at the end of the range is invalid. In this case, OSS returns HTTP status code 206 and the data that is within the range of byte 500 to byte 999.
+     * 2) If you set Range: bytes to 1000-2000, the value at the start of the range is invalid. In this case, OSS returns HTTP status code 416 and the InvalidRange error code.
+     */
+    public val rangeBehavior: String?
+        get() = headers["x-oss-range-behavior"]
+
+    /**
+     * Image processing parameters
+     */
+    public val process: String?
+        get() = parameters["x-oss-process"]
+
+    /**
      * If the time specified in this header is earlier than the object modified time or is invalid, OSS returns the object and 200 OK. If the time specified in this header is later than or the same as the object modified time, OSS returns 304 Not Modified. The time must be in GMT. Example: `Fri, 13 Nov 2015 14:47:53 GMT`.Default value: null
      */
     public val ifModifiedSince: String?
@@ -139,6 +155,29 @@ public class GetObjectRequest(builder: Builder) : RequestModel(builder) {
                 value?.let { this.headers["Range"] = it }
             }
             get() = headers["Range"]
+
+        /**
+         * Specify standard behaviors to download data by range.
+         * If the value is "standard", the download behavior is modified when the specified range is not within the valid range.
+         * For an object whose size is 1,000 bytes:
+         * 1) If you set Range: bytes to 500-2000, the value at the end of the range is invalid. In this case, OSS returns HTTP status code 206 and the data that is within the range of byte 500 to byte 999.
+         * 2) If you set Range: bytes to 1000-2000, the value at the start of the range is invalid. In this case, OSS returns HTTP status code 416 and the InvalidRange error code.
+         */
+        public var rangeBehavior: String?
+            set(value) {
+                value?.let { this.headers["x-oss-range-behavior"] = it }
+            }
+            get() = headers["x-oss-range-behavior"]
+
+
+        /**
+         * Image processing parameters
+         */
+        public var process: String?
+            set(value) {
+                value?.let { this.parameters["x-oss-process"] = it }
+            }
+            get() = parameters["x-oss-process"]
 
         /**
          * If the time specified in this header is earlier than the object modified time or is invalid, OSS returns the object and 200 OK. If the time specified in this header is later than or the same as the object modified time, OSS returns 304 Not Modified. The time must be in GMT. Example: `Fri, 13 Nov 2015 14:47:53 GMT`.Default value: null

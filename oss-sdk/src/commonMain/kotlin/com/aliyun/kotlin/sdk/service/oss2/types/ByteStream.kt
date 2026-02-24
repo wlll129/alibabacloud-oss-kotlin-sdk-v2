@@ -106,17 +106,18 @@ public fun ByteStream.toFlow(bufferSize: Long = 8192): Flow<ByteArray> = when (t
 private fun RawSource.toFlow(bufferSize: Long): Flow<ByteArray> {
     val source = this
     return flow {
-        val sink = Buffer()
-        while (true) {
-            val rc = source.readAtMostTo(sink, bufferSize)
-            if (rc == -1L) break
-            if (sink.size >= bufferSize) {
-                val bytes = sink.readByteArray(bufferSize.toInt())
-                emit(bytes)
+        Buffer().use { sink ->
+            while (true) {
+                val rc = source.readAtMostTo(sink, bufferSize)
+                if (rc == -1L) break
+                if (sink.size >= bufferSize) {
+                    val bytes = sink.readByteArray(bufferSize.toInt())
+                    emit(bytes)
+                }
             }
-        }
-        if (sink.size > 0L) {
-            emit(sink.readByteArray())
+            if (sink.size > 0L) {
+                emit(sink.readByteArray())
+            }
         }
     }
 }

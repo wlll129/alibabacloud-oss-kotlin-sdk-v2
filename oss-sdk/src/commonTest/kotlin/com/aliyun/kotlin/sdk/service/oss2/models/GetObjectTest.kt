@@ -26,6 +26,8 @@ class GetObjectTest {
         assertNull(request.responseCacheControl)
         assertNull(request.responseContentDisposition)
         assertNull(request.responseContentEncoding)
+        assertNull(request.rangeBehavior)
+        assertNull(request.process)
 
         assertNotNull(request.headers)
         assertTrue {
@@ -44,6 +46,8 @@ class GetObjectTest {
             key = "key"
             versionId = "versionId"
             range = "bytes=100-900"
+            rangeBehavior = "standard"
+            process = "image/resize,m_fixed,w_100,h_100/rotate,90"
             ifMatch = "ifMatch-123"
             ifNoneMatch = "ifNoneMatch-123"
             ifModifiedSince = "ifModifiedSince-123"
@@ -61,6 +65,8 @@ class GetObjectTest {
         assertEquals("key", request.key)
         assertEquals("versionId", request.versionId)
         assertEquals("bytes=100-900", request.range)
+        assertEquals("standard", request.rangeBehavior)
+        assertEquals("image/resize,m_fixed,w_100,h_100/rotate,90", request.process)
         assertEquals("ifModifiedSince-123", request.ifModifiedSince)
         assertEquals("ifUnmodifiedSince-123", request.ifUnmodifiedSince)
         assertEquals("ifMatch-123", request.ifMatch)
@@ -76,6 +82,7 @@ class GetObjectTest {
         assertNotNull(request.headers)
         assertTrue {
             request.headers.containsKey("Range")
+            request.headers.containsKey("x-oss-range-behavior")
             request.headers.containsKey("If-Modified-Since")
             request.headers.containsKey("If-Unmodified-Since")
             request.headers.containsKey("If-Match")
@@ -85,6 +92,7 @@ class GetObjectTest {
         assertNotNull(request.parameters)
         assertTrue {
             request.parameters.containsKey("versionId")
+            request.parameters.containsKey("x-oss-process")
             request.parameters.containsKey("response-content-type")
             request.parameters.containsKey("response-content-language")
             request.parameters.containsKey("response-expires")
@@ -101,6 +109,8 @@ class GetObjectTest {
         builder.key = "key"
         builder.versionId = "versionId"
         builder.range = "bytes=100-900"
+        builder.rangeBehavior = "standard"
+        builder.process = "image/resize,m_fixed,w_100,h_100/rotate,90"
         builder.ifMatch = "ifMatch-123"
         builder.ifNoneMatch = "ifNoneMatch-123"
         builder.ifModifiedSince = "ifModifiedSince-123"
@@ -118,6 +128,8 @@ class GetObjectTest {
         assertEquals("key", request.key)
         assertEquals("versionId", request.versionId)
         assertEquals("bytes=100-900", request.range)
+        assertEquals("standard", request.rangeBehavior)
+        assertEquals("image/resize,m_fixed,w_100,h_100/rotate,90", request.process)
         assertEquals("ifModifiedSince-123", request.ifModifiedSince)
         assertEquals("ifUnmodifiedSince-123", request.ifUnmodifiedSince)
         assertEquals("ifMatch-123", request.ifMatch)
@@ -133,6 +145,7 @@ class GetObjectTest {
         assertNotNull(request.headers)
         assertTrue {
             request.headers.containsKey("Range")
+            request.headers.containsKey("x-oss-range-behavior")
             request.headers.containsKey("If-Modified-Since")
             request.headers.containsKey("If-Unmodified-Since")
             request.headers.containsKey("If-Match")
@@ -142,6 +155,7 @@ class GetObjectTest {
         assertNotNull(request.parameters)
         assertTrue {
             request.parameters.containsKey("versionId")
+            request.parameters.containsKey("x-oss-process")
             request.parameters.containsKey("response-content-type")
             request.parameters.containsKey("response-content-language")
             request.parameters.containsKey("response-expires")
