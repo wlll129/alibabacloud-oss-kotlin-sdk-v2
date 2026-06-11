@@ -4,7 +4,6 @@ package com.aliyun.kotlin.sdk.service.oss2.extension.models
  * The request for the PutBucketCors operation.
  */
 public class PutBucketCorsRequest(builder: Builder) : RequestModel(builder) {
-
     /**
      * The name of the bucket.
      */
@@ -23,7 +22,6 @@ public class PutBucketCorsRequest(builder: Builder) : RequestModel(builder) {
     }
 
     public class Builder() : RequestModel.Builder() {
-
         /**
          * The name of the bucket.
          */
