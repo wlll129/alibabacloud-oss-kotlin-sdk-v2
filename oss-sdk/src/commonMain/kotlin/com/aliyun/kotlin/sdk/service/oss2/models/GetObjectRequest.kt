@@ -169,7 +169,6 @@ public class GetObjectRequest(builder: Builder) : RequestModel(builder) {
             }
             get() = headers["x-oss-range-behavior"]
 
-
         /**
          * Image processing parameters
          */

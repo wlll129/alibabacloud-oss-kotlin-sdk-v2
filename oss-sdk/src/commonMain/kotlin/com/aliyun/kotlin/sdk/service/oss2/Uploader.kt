@@ -140,11 +140,13 @@ public class Uploader {
             }
             else -> null
         }
-        client.abortMultipartUpload(AbortMultipartUploadRequest {
-            bucket = request.bucket
-            key = request.key
-            uploadId = checkpoint?.info?.data?.uploadInfo?.uploadId
-        })
+        client.abortMultipartUpload(
+            AbortMultipartUploadRequest {
+                bucket = request.bucket
+                key = request.key
+                uploadId = checkpoint?.info?.data?.uploadInfo?.uploadId
+            }
+        )
         checkpoint?.remove()
     }
 }
@@ -198,20 +200,22 @@ internal class UploaderDelegate(
                     partSize,
                     UploadCheckpoint.Info.Data.FileMeta(
                         size,
-                        Instant.fromEpochSeconds(lastModified).format(Format {
-                            year()
-                            char('-')
-                            monthNumber()
-                            char('-')
-                            day()
-                            char('T')
-                            hour()
-                            char(':')
-                            minute()
-                            char(':')
-                            second()
-                            chars("Z")
-                        })
+                        Instant.fromEpochSeconds(lastModified).format(
+                            Format {
+                                year()
+                                char('-')
+                                monthNumber()
+                                char('-')
+                                day()
+                                char('T')
+                                hour()
+                                char(':')
+                                minute()
+                                char(':')
+                                second()
+                                chars("Z")
+                            }
+                        )
                     ),
                     UploadCheckpoint.Info.Data.ObjectInfo("oss://$name"),
                     null
@@ -416,11 +420,13 @@ internal class UploaderDelegate(
             }
         } catch (e: Exception) {
             if (!options.leavePartsOnError) {
-                client.abortMultipartUpload(AbortMultipartUploadRequest {
-                    bucket = request.bucket
-                    key = request.key
-                    this.uploadId = uploadId
-                })
+                client.abortMultipartUpload(
+                    AbortMultipartUploadRequest {
+                        bucket = request.bucket
+                        key = request.key
+                        this.uploadId = uploadId
+                    }
+                )
             }
             throw e
         }

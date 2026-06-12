@@ -19,7 +19,9 @@ public class HttpRange {
         val start = startAndEnd.first().toLong()
         val end = if (startAndEnd.size == 2 && startAndEnd.last().isNotEmpty()) {
             startAndEnd.last().toLong()
-        } else { null }
+        } else {
+            null
+        }
 
         this.offset = start
         this.count = end?.let { it - start + 1 }

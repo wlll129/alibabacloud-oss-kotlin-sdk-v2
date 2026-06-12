@@ -5,13 +5,10 @@ import com.aliyun.kotlin.sdk.service.oss2.Defaults.CHECK_POINT_MAGIC
 import com.aliyun.kotlin.sdk.service.oss2.Defaults.DOWNLOAD_PARALLEL
 import com.aliyun.kotlin.sdk.service.oss2.Defaults.DOWNLOAD_PART_SIZE
 import com.aliyun.kotlin.sdk.service.oss2.Defaults.TEMP_FILE_SUFFIX
-import com.aliyun.kotlin.sdk.service.oss2.Defaults.UPLOAD_PARALLEL
-import com.aliyun.kotlin.sdk.service.oss2.Defaults.UPLOAD_PART_SIZE
 import com.aliyun.kotlin.sdk.service.oss2.exceptions.InconsistentException
 import com.aliyun.kotlin.sdk.service.oss2.exceptions.RequestException
 import com.aliyun.kotlin.sdk.service.oss2.exceptions.ResponseException
 import com.aliyun.kotlin.sdk.service.oss2.hash.CRC64Observer
-import com.aliyun.kotlin.sdk.service.oss2.hash.Crc64
 import com.aliyun.kotlin.sdk.service.oss2.hash.combine
 import com.aliyun.kotlin.sdk.service.oss2.hash.md5
 import com.aliyun.kotlin.sdk.service.oss2.models.DownloadCheckpoint
@@ -27,12 +24,8 @@ import com.aliyun.kotlin.sdk.service.oss2.progress.ProgressObserver
 import com.aliyun.kotlin.sdk.service.oss2.types.ByteStream
 import com.aliyun.kotlin.sdk.service.oss2.types.FeatureFlagsType
 import com.aliyun.kotlin.sdk.service.oss2.types.StreamObserver
-import com.aliyun.kotlin.sdk.service.oss2.types.toByteArray
 import com.aliyun.kotlin.sdk.service.oss2.types.toFlow
 import com.aliyun.kotlin.sdk.service.oss2.utils.XmlUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -160,7 +153,7 @@ internal class DownloadDelegate {
                 null,
                 DownloadCheckpoint.Info.Data(
                     DownloadCheckpoint.Info.Data.ObjectInfo(
-                        "oss://${name}",
+                        "oss://$name",
                         request.versionId,
                         request.range
                     ),
@@ -257,9 +250,8 @@ internal class DownloadDelegate {
     suspend fun download(filePath: Path): DownloadResult {
         val mutex = Mutex()
         val semaphore = Semaphore(permits = options.parallelNum)
-        val checkCrc =
-            ((client as? DefaultOSSClient)?.clientImpl?.featureFlags?.contains(FeatureFlagsType.ENABLE_CRC64_CHECK_DOWNLOAD)
-                ?: false) && request.range == null
+        val enableCheckDownloadCrc = (client as? DefaultOSSClient)?.clientImpl?.featureFlags?.contains(FeatureFlagsType.ENABLE_CRC64_CHECK_DOWNLOAD)
+        val checkCrc = enableCheckDownloadCrc ?: false && request.range == null
         var cpChunks = mutableListOf<DownloadedChunk>()
 
         val sourceInfo = checkSource()
@@ -324,7 +316,7 @@ internal class DownloadDelegate {
                                 }
 
                                 if (newOffset != tOffset) {
-                                    //remove updated chunk in cpChunks
+                                    // remove updated chunk in cpChunks
                                     if (calcCRC) {
                                         for (ii in 0..<i) {
                                             cpChunks[ii].crc64?.let { crc ->
@@ -383,12 +375,14 @@ internal class DownloadDelegate {
         calcCRC: Boolean
     ): DownloadedChunk {
         while (true) {
-            val result = client.getObjectAsStream(GetObjectRequest {
-                bucket = request.bucket
-                key = request.key
-                range = HttpRange(chunk.start, chunk.size).toString()
-                rangeBehavior = "standard"
-            })
+            val result = client.getObjectAsStream(
+                GetObjectRequest {
+                    bucket = request.bucket
+                    key = request.key
+                    range = HttpRange(chunk.start, chunk.size).toString()
+                    rangeBehavior = "standard"
+                }
+            )
             if (result.eTag != sourceInfo.eTag) {
                 throw RequestException("Source file is changed")
             }
@@ -400,7 +394,9 @@ internal class DownloadDelegate {
                 CRC64Observer(0).also {
                     observers.add(it)
                 }
-            } else { null }
+            } else {
+                null
+            }
             val writeLength = fileWriter.writeAt(chunk.start - chunk.rStart, stream, observers)
             if (writeLength == chunk.size) {
                 return DownloadedChunk(
@@ -449,7 +445,7 @@ internal class FileWriter(
                 size += it.size
                 raf.write(it)
                 for (observer in observers) {
-                    observer.data(it, 0 ,it.size)
+                    observer.data(it, 0, it.size)
                 }
             }
             return size
@@ -466,4 +462,3 @@ internal class FileWriter(
         raf.close()
     }
 }
-

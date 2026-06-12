@@ -15,10 +15,9 @@ public class UploaderOptions(
     public var leavePartsOnError: Boolean,
     public var enableCheckpoint: Boolean? = null,
     public var checkpointDir: Path? = null
-) {
-}
+)
 
-public class UploadResult(builder: Builder): ResultModel(builder) {
+public class UploadResult(builder: Builder) : ResultModel(builder) {
 
     /**
      * The upload ID that uniquely identifies the multipart upload task.
@@ -156,7 +155,7 @@ internal class UploadCheckpoint(
         loaded = true
     }
 
-    fun valid() : Boolean {
+    fun valid(): Boolean {
         val bytes = SystemFileSystem.source(cpFilePath).buffered().use {
             it.readByteArray()
         }
@@ -169,9 +168,12 @@ internal class UploadCheckpoint(
             return false
         }
 
-        if (!(info.data.objectInfo == this.info.data.objectInfo &&
-                info.data.fileMeta == this.info.data.fileMeta &&
-                info.data.partSize == this.info.data.partSize)) {
+        if (!(
+                info.data.objectInfo == this.info.data.objectInfo &&
+                    info.data.fileMeta == this.info.data.fileMeta &&
+                    info.data.partSize == this.info.data.partSize
+                )
+        ) {
             return false
         }
 

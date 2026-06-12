@@ -42,7 +42,6 @@ import kotlin.time.ExperimentalTime
 private fun String.asByteStream(): ByteStream = ByteStream.fromString(this)
 private fun ByteArray.asByteStream(): ByteStream = ByteStream.fromBytes(this)
 
-
 class DownloaderMockTest {
 
     internal class MockHttpClient @OptIn(ExperimentalTime::class) constructor(
@@ -68,17 +67,19 @@ class DownloaderMockTest {
             maxParallelCount = max(maxParallelCount, uploadingPartCount)
             val errData = """
                 <?xml version="1.0" encoding="UTF-8"?>
-			    <Error>
-				<Code>InvalidAccessKeyId</Code>
-				<Message>The OSS Access Key Id you provided does not exist in our records.</Message>
-				<RequestId>65467C42E001B4333337****</RequestId>
-				<SignatureProvided>ak</SignatureProvided>
-				<EC>0002-00000040</EC>
-			    </Error>
+                <Error>
+                <Code>InvalidAccessKeyId</Code>
+                <Message>The OSS Access Key Id you provided does not exist in our records.</Message>
+                <RequestId>65467C42E001B4333337****</RequestId>
+                <SignatureProvided>ak</SignatureProvided>
+                <EC>0002-00000040</EC>
+                </Error>
             """.trimIndent().replace("\n", "")
             val crc64Value = if (crcValueError) {
                 "0"
-            } else Crc64(data, data.size).digestValue.toULong().toString()
+            } else {
+                Crc64(data, data.size).digestValue.toULong().toString()
+            }
 
             val response = when (request.method) {
                 "HEAD" -> {
@@ -112,7 +113,9 @@ class DownloaderMockTest {
                         if (halfBodyErr) {
                             halfBodyErr = false
                             subData.copyOfRange(0, subData.size / 2)
-                        } else subData
+                        } else {
+                            subData
+                        }
                     } ?: data
 
                     val eTag = if (uploadedPartCount > 0 && fileWillChange) {
@@ -167,10 +170,13 @@ class DownloaderMockTest {
                 it.partSize = 1 * 1024 * 1024
             })
 
-            val result = downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-            }, filePath)
+            val result = downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                },
+                filePath
+            )
 
             assertEquals(data.size.toLong(), result.written)
             SystemFileSystem.source(filePath).buffered().use { source ->
@@ -211,13 +217,17 @@ class DownloaderMockTest {
                 if (SystemFileSystem.exists(filePath)) {
                     SystemFileSystem.delete(filePath)
                 }
-                val result = downloader.downloadFile(GetObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                }, filePath, {
-                    it.parallelNum = 1
-                    it.partSize = i
-                })
+                val result = downloader.downloadFile(
+                    GetObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                    },
+                    filePath,
+                    {
+                        it.parallelNum = 1
+                        it.partSize = i
+                    }
+                )
 
                 assertEquals(data.size.toLong(), result.written)
                 SystemFileSystem.source(filePath).buffered().use { source ->
@@ -261,16 +271,20 @@ class DownloaderMockTest {
                         if (SystemFileSystem.exists(filePath)) {
                             SystemFileSystem.delete(filePath)
                         }
-                        val result = downloader.downloadFile(GetObjectRequest {
-                            this.bucket = bucket
-                            this.key = key
-                            range = HttpRange(offset = rs.toLong(), count = rCount.toLong()).toString()
-                        }, filePath, {
-                            it.parallelNum = 1
-                            it.partSize = i
-                        })
+                        val result = downloader.downloadFile(
+                            GetObjectRequest {
+                                this.bucket = bucket
+                                this.key = key
+                                range = HttpRange(offset = rs.toLong(), count = rCount.toLong()).toString()
+                            },
+                            filePath,
+                            {
+                                it.parallelNum = 1
+                                it.partSize = i
+                            }
+                        )
 
-                        val expectLen = min(data.size-rs, rCount)
+                        val expectLen = min(data.size - rs, rCount)
                         assertEquals(expectLen.toLong(), result.written)
                         SystemFileSystem.source(filePath).buffered().use { source ->
                             val destinationMD5 = source.readByteArray().md5().toHexString()
@@ -307,15 +321,21 @@ class DownloaderMockTest {
         }
 
         OSSClient.create(config).use { client ->
-            val downloader = Downloader(client, {
-                it.parallelNum = 3
-                it.partSize = 1 * 1024 * 1024
-            })
+            val downloader = Downloader(
+                client,
+                {
+                    it.parallelNum = 3
+                    it.partSize = 1 * 1024 * 1024
+                }
+            )
 
-            val result = downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-            }, filePath)
+            val result = downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                },
+                filePath
+            )
 
             assertEquals(data.size.toLong(), result.written)
             SystemFileSystem.source(filePath).buffered().use { source ->
@@ -356,13 +376,17 @@ class DownloaderMockTest {
                 if (SystemFileSystem.exists(filePath)) {
                     SystemFileSystem.delete(filePath)
                 }
-                val result = downloader.downloadFile(GetObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                }, filePath, {
-                    it.parallelNum = 3
-                    it.partSize = i
-                })
+                val result = downloader.downloadFile(
+                    GetObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                    },
+                    filePath,
+                    {
+                        it.parallelNum = 3
+                        it.partSize = i
+                    }
+                )
 
                 assertEquals(data.size.toLong(), result.written)
                 SystemFileSystem.source(filePath).buffered().use { source ->
@@ -406,16 +430,20 @@ class DownloaderMockTest {
                         if (SystemFileSystem.exists(filePath)) {
                             SystemFileSystem.delete(filePath)
                         }
-                        val result = downloader.downloadFile(GetObjectRequest {
-                            this.bucket = bucket
-                            this.key = key
-                            range = HttpRange(offset = rs.toLong(), count = rCount.toLong()).toString()
-                        }, filePath, {
-                            it.parallelNum = 3
-                            it.partSize = i
-                        })
+                        val result = downloader.downloadFile(
+                            GetObjectRequest {
+                                this.bucket = bucket
+                                this.key = key
+                                range = HttpRange(offset = rs.toLong(), count = rCount.toLong()).toString()
+                            },
+                            filePath,
+                            {
+                                it.parallelNum = 3
+                                it.partSize = i
+                            }
+                        )
 
-                        val expectLen = min(data.size-rs, rCount)
+                        val expectLen = min(data.size - rs, rCount)
                         assertEquals(expectLen.toLong(), result.written)
                         SystemFileSystem.source(filePath).buffered().use { source ->
                             val destinationMD5 = source.readByteArray().md5().toHexString()
@@ -449,20 +477,28 @@ class DownloaderMockTest {
 
         OSSClient.create(config).use { client ->
 
-            val uploader = Downloader(client, {
-                it.partSize = 1 * 1024 * 1024
-                it.parallelNum = 4
-            })
+            val uploader = Downloader(
+                client,
+                {
+                    it.partSize = 1 * 1024 * 1024
+                    it.parallelNum = 4
+                }
+            )
             var exception: Throwable = assertFailsWith<IllegalArgumentException> {
-                uploader.downloadFile(GetObjectRequest {
-                }, filePath)
+                uploader.downloadFile(
+                    GetObjectRequest {},
+                    filePath
+                )
             }
             assertEquals("request.bucket is required", exception.message)
 
             exception = assertFailsWith<IllegalArgumentException> {
-                uploader.downloadFile(GetObjectRequest {
-                    this.bucket = bucket
-                }, filePath)
+                uploader.downloadFile(
+                    GetObjectRequest {
+                        this.bucket = bucket
+                    },
+                    filePath
+                )
             }
             assertEquals("request.key is required", exception.message)
         }
@@ -492,19 +528,26 @@ class DownloaderMockTest {
         }
 
         OSSClient.create(config).use { client ->
-            val downloader = Downloader(client, {
-                it.parallelNum = 1
-                it.partSize = 1 * 1024 * 1024
-            })
+            val downloader = Downloader(
+                client,
+                {
+                    it.parallelNum = 1
+                    it.partSize = 1 * 1024 * 1024
+                }
+            )
 
-            val result = downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-            }, filePath, {
-                it.parallelNum = 2
-                it.partSize = 1024 * 1024
-                it.useTempFile = false
-            })
+            val result = downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                },
+                filePath,
+                {
+                    it.parallelNum = 2
+                    it.partSize = 1024 * 1024
+                    it.useTempFile = false
+                }
+            )
 
             assertEquals(data.size.toLong(), result.written)
             SystemFileSystem.source(filePath).buffered().use { source ->
@@ -544,13 +587,17 @@ class DownloaderMockTest {
                 it.partSize = 1 * 1024 * 1024
             })
 
-            val result = downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-            }, filePath, {
-                it.parallelNum = 0
-                it.partSize = 0
-            })
+            val result = downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                },
+                filePath,
+                {
+                    it.parallelNum = 0
+                    it.partSize = 0
+                }
+            )
 
             assertEquals(data.size.toLong(), result.written)
             SystemFileSystem.source(filePath).buffered().use { source ->
@@ -590,13 +637,17 @@ class DownloaderMockTest {
                 it.partSize = 1 * 1024 * 1024
             })
 
-            val result = downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-            }, filePath, {
-                it.parallelNum = 1
-                it.partSize = 1024 * 1024
-            })
+            val result = downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                },
+                filePath,
+                {
+                    it.parallelNum = 1
+                    it.partSize = 1024 * 1024
+                }
+            )
 
             assertEquals(data.size.toLong(), result.written)
             SystemFileSystem.source(filePath).buffered().use { source ->
@@ -638,13 +689,17 @@ class DownloaderMockTest {
             })
 
             val exception = assertFailsWith<RequestException> {
-                downloader.downloadFile(GetObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                }, filePath, {
-                    it.parallelNum = 1
-                    it.partSize = 1024 * 1024
-                })
+                downloader.downloadFile(
+                    GetObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                    },
+                    filePath,
+                    {
+                        it.parallelNum = 1
+                        it.partSize = 1024 * 1024
+                    }
+                )
             }
             assertEquals("Source file is changed", exception.message)
 
@@ -680,15 +735,19 @@ class DownloaderMockTest {
                 it.enableCheckpoint = true
             })
 
-            val result = downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-            }, filePath, {
-                it.partSize = 128
-                it.parallelNum = 3
-                it.enableCheckpoint = true
-                it.verifyData = true
-            })
+            val result = downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                },
+                filePath,
+                {
+                    it.partSize = 128
+                    it.parallelNum = 3
+                    it.enableCheckpoint = true
+                    it.verifyData = true
+                }
+            )
 
             assertEquals(data.size.toLong(), result.written)
             SystemFileSystem.source(filePath).buffered().use { source ->
@@ -738,10 +797,13 @@ class DownloaderMockTest {
             })
 
             val exception = assertFails {
-                downloader.downloadFile(GetObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                }, localFilePath)
+                downloader.downloadFile(
+                    GetObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                    },
+                    localFilePath
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -763,15 +825,19 @@ class DownloaderMockTest {
 
             // resume from checkpoint
             mockHandler.failInPartNumber = null
-            val result = downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-            }, localFilePath, {
-                it.partSize = 128
-                it.parallelNum = 3
-                it.enableCheckpoint = true
-                it.verifyData = true
-            })
+            val result = downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                },
+                localFilePath,
+                {
+                    it.partSize = 128
+                    it.parallelNum = 3
+                    it.enableCheckpoint = true
+                    it.verifyData = true
+                }
+            )
 
             assertEquals(data.size.toLong(), result.written)
             SystemFileSystem.source(localFilePath).buffered().use { source ->
@@ -817,18 +883,24 @@ class DownloaderMockTest {
         }
 
         OSSClient.create(config).use { client ->
-            val downloader = Downloader(client, {
-                it.parallelNum = 3
-                it.partSize = 128
-                it.enableCheckpoint = true
-            })
+            val downloader = Downloader(
+                client,
+                {
+                    it.parallelNum = 3
+                    it.partSize = 128
+                    it.enableCheckpoint = true
+                }
+            )
 
             val exception = assertFails {
-                downloader.downloadFile(GetObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    range = HttpRange(rs.toLong(), rCount.toLong()).toString()
-                }, localFilePath)
+                downloader.downloadFile(
+                    GetObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        range = HttpRange(rs.toLong(), rCount.toLong()).toString()
+                    },
+                    localFilePath
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -850,16 +922,20 @@ class DownloaderMockTest {
 
             // resume from checkpoint
             mockHandler.failInPartNumber = null
-            val result = downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                range = HttpRange(rs.toLong(), rCount.toLong()).toString()
-            }, localFilePath, {
-                it.partSize = 128
-                it.parallelNum = 3
-                it.enableCheckpoint = true
-                it.verifyData = true
-            })
+            val result = downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    range = HttpRange(rs.toLong(), rCount.toLong()).toString()
+                },
+                localFilePath,
+                {
+                    it.partSize = 128
+                    it.parallelNum = 3
+                    it.enableCheckpoint = true
+                    it.verifyData = true
+                }
+            )
 
             assertEquals(rCount.toLong(), result.written)
             SystemFileSystem.source(localFilePath).buffered().use { source ->
@@ -894,27 +970,36 @@ class DownloaderMockTest {
         }
 
         OSSClient.create(config).use { client ->
-            val downloader = Downloader(client, {
-                it.parallelNum = 1
-                it.partSize = 1 * 1024 * 1024
-            })
+            val downloader = Downloader(
+                client,
+                {
+                    it.parallelNum = 1
+                    it.partSize = 1 * 1024 * 1024
+                }
+            )
 
             // filePath is invalid
             var exception = assertFailsWith<IllegalArgumentException> {
-                downloader.downloadFile(GetObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                }, Path(""))
+                downloader.downloadFile(
+                    GetObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                    },
+                    Path("")
+                )
             }
             assertEquals("filePath is invalid", exception.message)
 
             // fRange is invalid
             exception = assertFailsWith<IllegalArgumentException> {
-                downloader.downloadFile(GetObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    range = "invalid range"
-                }, filePath)
+                downloader.downloadFile(
+                    GetObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        range = "invalid range"
+                    },
+                    filePath
+                )
             }
             assertEquals("For input string: \"invalid range\"", exception.message)
 
@@ -926,7 +1011,7 @@ class DownloaderMockTest {
 
     @Test
     fun testDownloadCheckCRC() = runTest {
-        val data = Random.nextBytes(5*100*1024 + 1234)
+        val data = Random.nextBytes(5 * 100 * 1024 + 1234)
         val bucket = "bucket"
         val key = "key"
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
@@ -938,41 +1023,50 @@ class DownloaderMockTest {
             data,
             crcValueError = true
         )
-        OSSClient.create(ClientConfiguration().apply {
-            region = "cn-hangzhou"
-            credentialsProvider = StaticCredentialsProvider("ak", "sk")
-            httpTransport = mockHandler
-        }).use { client ->
+        OSSClient.create(
+            ClientConfiguration().apply {
+                region = "cn-hangzhou"
+                credentialsProvider = StaticCredentialsProvider("ak", "sk")
+                httpTransport = mockHandler
+            }
+        ).use { client ->
             val downloader = Downloader(client, {
                 it.parallelNum = 3
                 it.partSize = 100 * 1024
             })
 
             val exception = assertFailsWith<InconsistentException> {
-                downloader.downloadFile(GetObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                }, filePath)
+                downloader.downloadFile(
+                    GetObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                    },
+                    filePath
+                )
             }
             assertTrue(exception.message!!.contains("crc is inconsistent"))
-
         }
 
-        OSSClient.create(ClientConfiguration().apply {
-            region = "cn-hangzhou"
-            credentialsProvider = StaticCredentialsProvider("ak", "sk")
-            httpTransport = mockHandler
-            disableDownloadCRC64Check = true
-        }).use { client ->
+        OSSClient.create(
+            ClientConfiguration().apply {
+                region = "cn-hangzhou"
+                credentialsProvider = StaticCredentialsProvider("ak", "sk")
+                httpTransport = mockHandler
+                disableDownloadCRC64Check = true
+            }
+        ).use { client ->
             val downloader = Downloader(client, {
                 it.parallelNum = 3
                 it.partSize = 100 * 1024
             })
 
-            val result = downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-            }, filePath)
+            val result = downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                },
+                filePath
+            )
 
             assertEquals(data.size.toLong(), result.written)
             SystemFileSystem.source(filePath).buffered().use { source ->
@@ -989,7 +1083,7 @@ class DownloaderMockTest {
 
     @Test
     fun testDownloadCheckCRCWithResume() = runTest {
-        val data = Random.nextBytes(5*100*1024 + 1234)
+        val data = Random.nextBytes(5 * 100 * 1024 + 1234)
         val bucket = "bucket"
         val key = "key"
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
@@ -1001,20 +1095,25 @@ class DownloaderMockTest {
             data,
             halfBodyErr = true
         )
-        OSSClient.create(ClientConfiguration().apply {
-            region = "cn-hangzhou"
-            credentialsProvider = StaticCredentialsProvider("ak", "sk")
-            httpTransport = mockHandler
-        }).use { client ->
+        OSSClient.create(
+            ClientConfiguration().apply {
+                region = "cn-hangzhou"
+                credentialsProvider = StaticCredentialsProvider("ak", "sk")
+                httpTransport = mockHandler
+            }
+        ).use { client ->
             val downloader = Downloader(client, {
                 it.parallelNum = 3
                 it.partSize = 100 * 1024
             })
 
-            val result = downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-            }, filePath)
+            val result = downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                },
+                filePath
+            )
 
             assertEquals(data.size.toLong(), result.written)
             SystemFileSystem.source(filePath).buffered().use { source ->
@@ -1031,7 +1130,7 @@ class DownloaderMockTest {
 
     @Test
     fun testDownloadProgress() = runTest {
-        val data = Random.nextBytes(5*1024*1024 + 123)
+        val data = Random.nextBytes(5 * 1024 * 1024 + 123)
         val bucket = "bucket"
         val key = "key"
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
@@ -1043,43 +1142,50 @@ class DownloaderMockTest {
         val mockHandler = MockHttpClient(
             data,
         )
-        OSSClient.create(ClientConfiguration().apply {
-            region = "cn-hangzhou"
-            credentialsProvider = StaticCredentialsProvider("ak", "sk")
-            httpTransport = mockHandler
-        }).use { client ->
+        OSSClient.create(
+            ClientConfiguration().apply {
+                region = "cn-hangzhou"
+                credentialsProvider = StaticCredentialsProvider("ak", "sk")
+                httpTransport = mockHandler
+            }
+        ).use { client ->
             var downloader = Downloader(client, {
                 it.parallelNum = 1
                 it.partSize = 1024 * 1024
             })
-            downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                progressListener = ProgressListener { bytesReceive, totalBytesReceive, totalBytesExpectedToReceive ->
-                    totalBytesTransferred += bytesReceive
-                    assertEquals(totalBytesTransferred, totalBytesReceive)
-                    assertTrue(((1024 * 1024).toLong() == bytesReceive) || (123.toLong() == bytesReceive))
-                    assertEquals(5 * 1024 * 1024 + 123, totalBytesExpectedToReceive)
-                }
-            }, filePath)
+            downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    progressListener = ProgressListener { bytesReceive, totalBytesReceive, totalBytesExpectedToReceive ->
+                        totalBytesTransferred += bytesReceive
+                        assertEquals(totalBytesTransferred, totalBytesReceive)
+                        assertTrue(((1024 * 1024).toLong() == bytesReceive) || (123.toLong() == bytesReceive))
+                        assertEquals(5 * 1024 * 1024 + 123, totalBytesExpectedToReceive)
+                    }
+                },
+                filePath
+            )
             assertEquals(5 * 1024 * 1024 + 123, totalBytesTransferred)
-
 
             totalBytesTransferred = 0
             downloader = Downloader(client, {
                 it.parallelNum = 3
                 it.partSize = 1024 * 1024
             })
-            downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                progressListener = ProgressListener { bytesReceive, totalBytesReceive, totalBytesExpectedToReceive ->
-                    totalBytesTransferred += bytesReceive
-                    assertEquals(totalBytesTransferred, totalBytesReceive)
-                    assertTrue(((1024 * 1024).toLong() == bytesReceive) || (123.toLong() == bytesReceive))
-                    assertEquals(5 * 1024 * 1024 + 123, totalBytesExpectedToReceive)
-                }
-            }, filePath)
+            downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    progressListener = ProgressListener { bytesReceive, totalBytesReceive, totalBytesExpectedToReceive ->
+                        totalBytesTransferred += bytesReceive
+                        assertEquals(totalBytesTransferred, totalBytesReceive)
+                        assertTrue(((1024 * 1024).toLong() == bytesReceive) || (123.toLong() == bytesReceive))
+                        assertEquals(5 * 1024 * 1024 + 123, totalBytesExpectedToReceive)
+                    }
+                },
+                filePath
+            )
             assertEquals(5 * 1024 * 1024 + 123, totalBytesTransferred)
         }
     }
@@ -1120,16 +1226,19 @@ class DownloaderMockTest {
             })
 
             var exception = assertFails {
-                downloader.downloadFile(GetObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    progressListener = ProgressListener { bytesReceive, totalBytesReceive, totalBytesExpectedToReceive ->
-                        totalBytesTransferred += bytesReceive
-                        assertEquals(totalBytesTransferred, totalBytesReceive)
-                        assertTrue(((128).toLong() == bytesReceive) || (82.toLong() == bytesReceive))
-                        assertEquals(1234, totalBytesExpectedToReceive)
-                    }
-                }, localFilePath)
+                downloader.downloadFile(
+                    GetObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        progressListener = ProgressListener { bytesReceive, totalBytesReceive, totalBytesExpectedToReceive ->
+                            totalBytesTransferred += bytesReceive
+                            assertEquals(totalBytesTransferred, totalBytesReceive)
+                            assertTrue(((128).toLong() == bytesReceive) || (82.toLong() == bytesReceive))
+                            assertEquals(1234, totalBytesExpectedToReceive)
+                        }
+                    },
+                    localFilePath
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -1151,21 +1260,25 @@ class DownloaderMockTest {
 
             // resume from checkpoint
             mockHandler.failInPartNumber = null
-            var result = downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                progressListener = ProgressListener { bytesReceive, totalBytesReceive, totalBytesExpectedToReceive ->
-                    totalBytesTransferred += bytesReceive
-                    assertEquals(totalBytesTransferred, totalBytesReceive)
-                    assertTrue(((128).toLong() == bytesReceive) || (82.toLong() == bytesReceive))
-                    assertEquals(1234, totalBytesExpectedToReceive)
+            var result = downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    progressListener = ProgressListener { bytesReceive, totalBytesReceive, totalBytesExpectedToReceive ->
+                        totalBytesTransferred += bytesReceive
+                        assertEquals(totalBytesTransferred, totalBytesReceive)
+                        assertTrue(((128).toLong() == bytesReceive) || (82.toLong() == bytesReceive))
+                        assertEquals(1234, totalBytesExpectedToReceive)
+                    }
+                },
+                localFilePath,
+                {
+                    it.partSize = 128
+                    it.parallelNum = 3
+                    it.enableCheckpoint = true
+                    it.verifyData = true
                 }
-            }, localFilePath, {
-                it.partSize = 128
-                it.parallelNum = 3
-                it.enableCheckpoint = true
-                it.verifyData = true
-            })
+            )
 
             assertEquals(1234, totalBytesTransferred)
             assertEquals(data.size.toLong(), result.written)
@@ -1189,16 +1302,19 @@ class DownloaderMockTest {
             })
 
             exception = assertFails {
-                downloader.downloadFile(GetObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    progressListener = ProgressListener { bytesReceive, totalBytesReceive, totalBytesExpectedToReceive ->
-                        totalBytesTransferred += bytesReceive
-                        assertEquals(totalBytesTransferred, totalBytesReceive)
-                        assertTrue(((128).toLong() == bytesReceive) || (82.toLong() == bytesReceive))
-                        assertEquals(1234, totalBytesExpectedToReceive)
-                    }
-                }, localFilePath)
+                downloader.downloadFile(
+                    GetObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        progressListener = ProgressListener { bytesReceive, totalBytesReceive, totalBytesExpectedToReceive ->
+                            totalBytesTransferred += bytesReceive
+                            assertEquals(totalBytesTransferred, totalBytesReceive)
+                            assertTrue(((128).toLong() == bytesReceive) || (82.toLong() == bytesReceive))
+                            assertEquals(1234, totalBytesExpectedToReceive)
+                        }
+                    },
+                    localFilePath
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -1220,21 +1336,25 @@ class DownloaderMockTest {
 
             // resume from checkpoint
             mockHandler.failInPartNumber = null
-            result = downloader.downloadFile(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                progressListener = ProgressListener { bytesReceive, totalBytesReceive, totalBytesExpectedToReceive ->
-                    totalBytesTransferred += bytesReceive
-                    assertEquals(totalBytesTransferred, totalBytesReceive)
-                    assertTrue(((128).toLong() == bytesReceive) || (82.toLong() == bytesReceive))
-                    assertEquals(1234, totalBytesExpectedToReceive)
+            result = downloader.downloadFile(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    progressListener = ProgressListener { bytesReceive, totalBytesReceive, totalBytesExpectedToReceive ->
+                        totalBytesTransferred += bytesReceive
+                        assertEquals(totalBytesTransferred, totalBytesReceive)
+                        assertTrue(((128).toLong() == bytesReceive) || (82.toLong() == bytesReceive))
+                        assertEquals(1234, totalBytesExpectedToReceive)
+                    }
+                },
+                localFilePath,
+                {
+                    it.partSize = 128
+                    it.parallelNum = 3
+                    it.enableCheckpoint = true
+                    it.verifyData = true
                 }
-            }, localFilePath, {
-                it.partSize = 128
-                it.parallelNum = 3
-                it.enableCheckpoint = true
-                it.verifyData = true
-            })
+            )
 
             assertEquals(1234, totalBytesTransferred)
             assertEquals(data.size.toLong(), result.written)
@@ -1285,20 +1405,26 @@ class DownloaderMockTest {
             })
 
             val exception = assertFails {
-                downloader.downloadFile(GetObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                }, localFilePath)
+                downloader.downloadFile(
+                    GetObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                    },
+                    localFilePath
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
             assertTrue(SystemFileSystem.exists(localFilePathTemp))
             assertTrue(SystemFileSystem.exists(cpFilePath))
 
-            downloader.abortDownload(GetObjectRequest {
-                this.bucket = bucket
-                this.key = key
-            }, localFilePath)
+            downloader.abortDownload(
+                GetObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                },
+                localFilePath
+            )
             assertFalse(SystemFileSystem.exists(localFilePathTemp))
             assertFalse(SystemFileSystem.exists(cpFilePath))
 

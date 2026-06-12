@@ -23,8 +23,8 @@ import com.aliyun.kotlin.sdk.service.oss2.utils.XmlUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.format
-import kotlinx.datetime.format.char
 import kotlinx.datetime.format.DateTimeComponents.Companion.Format
+import kotlinx.datetime.format.char
 import kotlinx.io.Buffer
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
@@ -62,7 +62,12 @@ class UploaderMockTest {
         var maxParallelCount = 0
         private var uploadingPartCount = 0
         enum class ResponseErrorType {
-            Init, UploadPart, Complete, ListPart, Put, Abort
+            Init,
+            UploadPart,
+            Complete,
+            ListPart,
+            Put,
+            Abort
         }
         override suspend fun execute(
             request: RequestMessage,
@@ -70,16 +75,17 @@ class UploaderMockTest {
         ): ResponseMessage {
             uploadingPartCount += 1
             maxParallelCount = max(maxParallelCount, uploadingPartCount)
-            val errData = """
-                <?xml version="1.0" encoding="UTF-8"?>
-			    <Error>
-				<Code>InvalidAccessKeyId</Code>
-				<Message>The OSS Access Key Id you provided does not exist in our records.</Message>
-				<RequestId>65467C42E001B4333337****</RequestId>
-				<SignatureProvided>ak</SignatureProvided>
-				<EC>0002-00000040</EC>
-			    </Error>
-            """.trimIndent().replace("\n", "")
+            val errData =
+                """
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <Error>
+                    <Code>InvalidAccessKeyId</Code>
+                    <Message>The OSS Access Key Id you provided does not exist in our records.</Message>
+                    <RequestId>65467C42E001B4333337****</RequestId>
+                    <SignatureProvided>ak</SignatureProvided>
+                    <EC>0002-00000040</EC>
+                    </Error>
+                """.trimIndent().replace("\n", "")
 
             val response = when (request.method) {
                 "POST" -> {
@@ -94,13 +100,14 @@ class UploaderMockTest {
                                 body = errData.asByteStream()
                             )
                         }
-                        val body = """
-                                    <InitiateMultipartUploadResult>
-                                    <Bucket>bucket</Bucket>
-                                    <Key>key</Key>
-                                    <UploadId>uploadId-1234</UploadId>
-                                    </InitiateMultipartUploadResult>
-                                """.trimIndent().replace("\n", "")
+                        val body =
+                            """
+                                <InitiateMultipartUploadResult>
+                                <Bucket>bucket</Bucket>
+                                <Key>key</Key>
+                                <UploadId>uploadId-1234</UploadId>
+                                </InitiateMultipartUploadResult>
+                            """.trimIndent().replace("\n", "")
                         ResponseMessage(
                             statusCode = 200,
                             headers = mutableMapOf(
@@ -120,15 +127,16 @@ class UploaderMockTest {
                                 body = errData.asByteStream()
                             )
                         }
-                        val body = """
-                                    <CompleteMultipartUploadResult>
-                                    <EncodingType>url</EncodingType>
-                                    <Location>bucket/key</Location>
-                                    <Bucket>bucket</Bucket>
-                                    <Key>key</Key>
-                                    <ETag>etag</ETag>
-                                    </CompleteMultipartUploadResult>
-                                """.trimIndent().replace("\n", "")
+                        val body =
+                            """
+                                <CompleteMultipartUploadResult>
+                                <EncodingType>url</EncodingType>
+                                <Location>bucket/key</Location>
+                                <Bucket>bucket</Bucket>
+                                <Key>key</Key>
+                                <ETag>etag</ETag>
+                                </CompleteMultipartUploadResult>
+                            """.trimIndent().replace("\n", "")
                         ResponseMessage(
                             statusCode = 200,
                             headers = mutableMapOf(
@@ -144,8 +152,7 @@ class UploaderMockTest {
                     if (request.url.contains("uploadId")) {
                         val query = extractParamsWithoutDecode(request.url)
                         val partNumber = query["partNumber"]!!.toLong()
-                        if (type == ResponseErrorType.UploadPart ||
-                            failInPartNumber == partNumber) {
+                        if (type == ResponseErrorType.UploadPart || failInPartNumber == partNumber) {
                             return ResponseMessage(
                                 statusCode = 403,
                                 headers = mutableMapOf(
@@ -174,12 +181,14 @@ class UploaderMockTest {
                             crc64.digestValue.toULong().toString()
                         }
 
-                        uploadedParts.add(Part {
-                            this.eTag = eTag
-                            this.size = size
-                            hashCrc64ecma = crc64ecma
-                            this.partNumber = partNumber
-                        })
+                        uploadedParts.add(
+                            Part {
+                                this.eTag = eTag
+                                this.size = size
+                                hashCrc64ecma = crc64ecma
+                                this.partNumber = partNumber
+                            }
+                        )
                         delay(0.1.seconds)
                         ResponseMessage(
                             statusCode = 200,
@@ -333,13 +342,14 @@ class UploaderMockTest {
         }
 
         OSSClient.create(config).use { client ->
-
             val uploader = Uploader(client)
-            val result = uploader.upload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = "Hello oss.".asByteStream()
-            })
+            val result = uploader.upload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = "Hello oss.".asByteStream()
+                }
+            )
             assertEquals(200, result.statusCode)
             assertEquals("Normal", result.headers["x-oss-object-type"])
         }
@@ -365,11 +375,13 @@ class UploaderMockTest {
                 it.partSize = 1 * 1024 * 1024
                 it.parallelNum = 1
             })
-            val result = uploader.upload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
-            })
+            val result = uploader.upload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
+                }
+            )
             assertEquals(200, result.statusCode)
             assertEquals("Multipart", result.headers["x-oss-object-type"])
             assertEquals(1, mockHandler.maxParallelCount)
@@ -390,20 +402,24 @@ class UploaderMockTest {
 
         OSSClient.create(config).use { client ->
 
-            val uploader = Uploader(client, {
-                it.partSize = 1 * 1024 * 1024
-                it.parallelNum = 4
-            })
-            val result = uploader.upload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
-            })
+            val uploader = Uploader(
+                client,
+                {
+                    it.partSize = 1 * 1024 * 1024
+                    it.parallelNum = 4
+                }
+            )
+            val result = uploader.upload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
+                }
+            )
             assertEquals(200, result.statusCode)
             assertEquals("Multipart", result.headers["x-oss-object-type"])
             assertEquals(4, mockHandler.maxParallelCount)
         }
-
     }
 
     @Test
@@ -425,32 +441,37 @@ class UploaderMockTest {
                 it.parallelNum = 4
             })
             var exception: Throwable = assertFailsWith<IllegalArgumentException> {
-                uploader.upload(PutObjectRequest {
-                })
+                uploader.upload(PutObjectRequest {})
             }
             assertEquals("request.bucket is required", exception.message)
 
             exception = assertFailsWith<IllegalArgumentException> {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                    }
+                )
             }
             assertEquals("request.key is required", exception.message)
 
             exception = assertFailsWith<IllegalArgumentException> {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                    }
+                )
             }
             assertEquals("request.body is required", exception.message)
 
             exception = assertFailsWith<RequestException> {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = ByteStream.fromFile(Path("error"))
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = ByteStream.fromFile(Path("error"))
+                    }
+                )
             }
             assertEquals("Cannot get the size of the body", exception.message)
         }
@@ -475,11 +496,13 @@ class UploaderMockTest {
             OSSClient.create(config).use { client ->
 
                 val uploader = Uploader(client)
-                val result = uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = ByteStream.fromFile(filePath)
-                })
+                val result = uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = ByteStream.fromFile(filePath)
+                    }
+                )
                 assertEquals(200, result.statusCode)
                 assertEquals("Normal", result.headers["x-oss-object-type"])
             }
@@ -507,11 +530,13 @@ class UploaderMockTest {
                 it.partSize = 1 * 1024 * 1024
                 it.parallelNum = 1
             })
-            val result = uploader.upload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = ByteStream.fromFile(filePath)
-            })
+            val result = uploader.upload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = ByteStream.fromFile(filePath)
+                }
+            )
             assertEquals(200, result.statusCode)
             assertEquals("Multipart", result.headers["x-oss-object-type"])
             assertEquals(1, mockHandler.maxParallelCount)
@@ -539,11 +564,13 @@ class UploaderMockTest {
                 it.partSize = 1 * 1024 * 1024
                 it.parallelNum = 4
             })
-            val result = uploader.upload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = ByteStream.fromFile(filePath)
-            })
+            val result = uploader.upload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = ByteStream.fromFile(filePath)
+                }
+            )
             assertEquals(200, result.statusCode)
             assertEquals("Multipart", result.headers["x-oss-object-type"])
             assertEquals(4, mockHandler.maxParallelCount)
@@ -570,11 +597,13 @@ class UploaderMockTest {
 
             val uploader = Uploader(client)
             val exception = assertFails {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = "Hello oss.".asByteStream()
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = "Hello oss.".asByteStream()
+                    }
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -597,16 +626,21 @@ class UploaderMockTest {
 
         OSSClient.create(config).use { client ->
 
-            val uploader = Uploader(client, {
-                it.partSize = 1 * 1024 * 1024
-                it.parallelNum = 1
-            })
+            val uploader = Uploader(
+                client,
+                {
+                    it.partSize = 1 * 1024 * 1024
+                    it.parallelNum = 1
+                }
+            )
             val exception = assertFails {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
+                    }
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -629,16 +663,21 @@ class UploaderMockTest {
 
         OSSClient.create(config).use { client ->
 
-            val uploader = Uploader(client, {
-                it.partSize = 1 * 1024 * 1024
-                it.parallelNum = 1
-            })
+            val uploader = Uploader(
+                client,
+                {
+                    it.partSize = 1 * 1024 * 1024
+                    it.parallelNum = 1
+                }
+            )
             val exception = assertFails {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
+                    }
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -661,16 +700,21 @@ class UploaderMockTest {
 
         OSSClient.create(config).use { client ->
 
-            val uploader = Uploader(client, {
-                it.partSize = 1 * 1024 * 1024
-                it.parallelNum = 1
-            })
+            val uploader = Uploader(
+                client,
+                {
+                    it.partSize = 1 * 1024 * 1024
+                    it.parallelNum = 1
+                }
+            )
             val exception = assertFails {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
+                    }
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -693,16 +737,21 @@ class UploaderMockTest {
 
         OSSClient.create(config).use { client ->
 
-            val uploader = Uploader(client, {
-                it.partSize = 1 * 1024 * 1024
-                it.parallelNum = 4
-            })
+            val uploader = Uploader(
+                client,
+                {
+                    it.partSize = 1 * 1024 * 1024
+                    it.parallelNum = 4
+                }
+            )
             val exception = assertFails {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
+                    }
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -728,11 +777,13 @@ class UploaderMockTest {
                 it.partSize = 1 * 1024 * 1024
                 it.enableCheckpoint = true
             })
-            val result = uploader.upload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = ByteStream.fromFile(filePath)
-            })
+            val result = uploader.upload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = ByteStream.fromFile(filePath)
+                }
+            )
             assertEquals(200, result.statusCode)
             assertEquals("Multipart", result.headers["x-oss-object-type"])
         }
@@ -747,24 +798,26 @@ class UploaderMockTest {
         val checkpointDir = Path("$SystemTemporaryDirectory/oss-kotlin-sdk-test/checkpoint/")
         val bucket = "bucket"
         val key = "key"
-        val name = "${bucket}/${key}"
+        val name = "$bucket/$key"
         val destHash = "oss://${XmlUtils.escapeText(name)}".toByteArray().md5().toHexString()
         val srcHash = filePath.toString().toByteArray().md5().toHexString()
         val cpFilePath = Path("$checkpointDir/$srcHash-$destHash$CHECK_POINT_FILE_SUFFIX_UPLOADER)")
-        val lastModified = Instant.fromEpochSeconds(File(filePath.toString()).lastModified()).format(Format {
-            year()
-            char('-')
-            monthNumber()
-            char('-')
-            day()
-            char('T')
-            hour()
-            char(':')
-            minute()
-            char(':')
-            second()
-            chars("Z")
-        })
+        val lastModified = Instant.fromEpochSeconds(File(filePath.toString()).lastModified()).format(
+            Format {
+                year()
+                char('-')
+                monthNumber()
+                char('-')
+                day()
+                char('T')
+                hour()
+                char(':')
+                minute()
+                char(':')
+                second()
+                chars("Z")
+            }
+        )
 
         val mockHandler = MockHttpClient()
         val config = ClientConfiguration().apply {
@@ -777,17 +830,22 @@ class UploaderMockTest {
 
             // Case 2, fail in part number 4
             mockHandler.failInPartNumber = 4
-            val uploader = Uploader(client, {
-                it.partSize = 1 * 1024 * 1024
-                it.enableCheckpoint = true
-                it.checkpointDir = checkpointDir
-            })
+            val uploader = Uploader(
+                client,
+                {
+                    it.partSize = 1 * 1024 * 1024
+                    it.enableCheckpoint = true
+                    it.checkpointDir = checkpointDir
+                }
+            )
             var exception = assertFails {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = ByteStream.fromFile(filePath)
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = ByteStream.fromFile(filePath)
+                    }
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -803,11 +861,13 @@ class UploaderMockTest {
             assertEquals(lastModified, info.data.fileMeta.lastModified)
 
             mockHandler.failInPartNumber = null
-            var result = uploader.upload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = ByteStream.fromFile(filePath)
-            })
+            var result = uploader.upload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = ByteStream.fromFile(filePath)
+                }
+            )
             assertEquals(200, result.statusCode)
             assertEquals("Multipart", result.headers["x-oss-object-type"])
             assertEquals(0, SystemFileSystem.list(checkpointDir).size)
@@ -815,11 +875,13 @@ class UploaderMockTest {
             // Case 2, fail in part number 1
             mockHandler.failInPartNumber = 1
             exception = assertFails {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = ByteStream.fromFile(filePath)
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = ByteStream.fromFile(filePath)
+                    }
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -835,11 +897,13 @@ class UploaderMockTest {
             assertEquals(lastModified, info.data.fileMeta.lastModified)
 
             mockHandler.failInPartNumber = null
-            result = uploader.upload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = ByteStream.fromFile(filePath)
-            })
+            result = uploader.upload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = ByteStream.fromFile(filePath)
+                }
+            )
             assertEquals(200, result.statusCode)
             assertEquals("Multipart", result.headers["x-oss-object-type"])
             assertEquals(0, SystemFileSystem.list(checkpointDir).size)
@@ -847,11 +911,13 @@ class UploaderMockTest {
             // Case 3, list Parts Fail
             mockHandler.failInPartNumber = 3
             exception = assertFails {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = ByteStream.fromFile(filePath)
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = ByteStream.fromFile(filePath)
+                    }
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -869,11 +935,13 @@ class UploaderMockTest {
             mockHandler.type = MockHttpClient.ResponseErrorType.ListPart
             mockHandler.failInPartNumber = null
             exception = assertFails {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = ByteStream.fromFile(filePath)
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = ByteStream.fromFile(filePath)
+                    }
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -889,11 +957,13 @@ class UploaderMockTest {
             assertEquals(lastModified, info.data.fileMeta.lastModified)
 
             mockHandler.type = null
-            result = uploader.upload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = ByteStream.fromFile(filePath)
-            })
+            result = uploader.upload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = ByteStream.fromFile(filePath)
+                }
+            )
             assertEquals(200, result.statusCode)
             assertEquals("Multipart", result.headers["x-oss-object-type"])
             assertEquals(0, SystemFileSystem.list(checkpointDir).size)
@@ -922,30 +992,36 @@ class UploaderMockTest {
                 it.partSize = 1 * 1024 * 1024
             })
             val exception = assertFailsWith<OperationException> {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
+                    }
+                )
             }
             assertTrue(exception.cause is InconsistentException)
         }
 
         // disable check crc
-        OSSClient.create(ClientConfiguration().apply {
-            region = "cn-hangzhou"
-            credentialsProvider = StaticCredentialsProvider("ak", "sk")
-            httpTransport = mockHandler
-            disableUploadCRC64Check = true
-        }).use { client ->
+        OSSClient.create(
+            ClientConfiguration().apply {
+                region = "cn-hangzhou"
+                credentialsProvider = StaticCredentialsProvider("ak", "sk")
+                httpTransport = mockHandler
+                disableUploadCRC64Check = true
+            }
+        ).use { client ->
             val uploader = Uploader(client, {
                 it.partSize = 1 * 1024 * 1024
             })
-            val result = uploader.upload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
-            })
+            val result = uploader.upload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = Random.nextBytes(10 * 1024 * 1024).asByteStream()
+                }
+            )
             assertEquals(200, result.statusCode)
             assertEquals("Multipart", result.headers["x-oss-object-type"])
         }
@@ -967,16 +1043,18 @@ class UploaderMockTest {
         OSSClient.create(config).use { client ->
 
             val uploader = Uploader(client)
-            val result = uploader.upload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = Random.nextBytes(1 * 1024 * 1024).asByteStream()
-                progressListener = ProgressListener { bytesSent, totalBytesSent, totalBytesExpectedToSend ->
-                    totalBytesTransferred += bytesSent
-                    assertEquals(totalBytesTransferred, totalBytesSent)
-                    assertEquals(1 * 1024 * 1024, totalBytesExpectedToSend)
+            val result = uploader.upload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = Random.nextBytes(1 * 1024 * 1024).asByteStream()
+                    progressListener = ProgressListener { bytesSent, totalBytesSent, totalBytesExpectedToSend ->
+                        totalBytesTransferred += bytesSent
+                        assertEquals(totalBytesTransferred, totalBytesSent)
+                        assertEquals(1 * 1024 * 1024, totalBytesExpectedToSend)
+                    }
                 }
-            })
+            )
             assertEquals(200, result.statusCode)
             assertEquals("Normal", result.headers["x-oss-object-type"])
             assertEquals(1 * 1024 * 1024, totalBytesTransferred)
@@ -1008,32 +1086,36 @@ class UploaderMockTest {
 
             mockHandler.failInPartNumber = 4
             val exception = assertFails {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = ByteStream.fromFile(filePath)
-                    progressListener = ProgressListener { bytesSent, totalBytesSent, totalBytesExpectedToSend ->
-                        totalBytesTransferred += bytesSent
-                        assertEquals(totalBytesTransferred, totalBytesSent)
-                        assertEquals(10 * 1024 * 1024, totalBytesExpectedToSend)
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = ByteStream.fromFile(filePath)
+                        progressListener = ProgressListener { bytesSent, totalBytesSent, totalBytesExpectedToSend ->
+                            totalBytesTransferred += bytesSent
+                            assertEquals(totalBytesTransferred, totalBytesSent)
+                            assertEquals(10 * 1024 * 1024, totalBytesExpectedToSend)
+                        }
                     }
-                })
+                )
             }
             assertTrue { exception.cause is ServiceException }
             assertEquals(403, (exception.cause as ServiceException).statusCode)
 
             mockHandler.failInPartNumber = null
-            val result = uploader.upload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = ByteStream.fromFile(filePath)
-                progressListener = ProgressListener { bytesSent, totalBytesSent, totalBytesExpectedToSend ->
-                    assertTrue(totalBytesSent >= 3 * 1024 * 1024)
-                    totalBytesTransferred += bytesSent
-                    assertEquals(totalBytesTransferred, totalBytesSent)
-                    assertEquals(10 * 1024 * 1024, totalBytesExpectedToSend)
+            val result = uploader.upload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = ByteStream.fromFile(filePath)
+                    progressListener = ProgressListener { bytesSent, totalBytesSent, totalBytesExpectedToSend ->
+                        assertTrue(totalBytesSent >= 3 * 1024 * 1024)
+                        totalBytesTransferred += bytesSent
+                        assertEquals(totalBytesTransferred, totalBytesSent)
+                        assertEquals(10 * 1024 * 1024, totalBytesExpectedToSend)
+                    }
                 }
-            })
+            )
             assertEquals(200, result.statusCode)
             assertEquals("Multipart", result.headers["x-oss-object-type"])
             assertEquals(10 * 1024 * 1024, totalBytesTransferred)
@@ -1079,24 +1161,26 @@ class UploaderMockTest {
         val checkpointDir = "${System.getProperty("user.home")}/OSS"
         val bucket = "bucket"
         val key = "key"
-        val name = "${bucket}/${key}"
+        val name = "$bucket/$key"
         val destHash = "oss://${XmlUtils.escapeText(name)}".toByteArray().md5().toHexString()
         val srcHash = filePath.toString().toByteArray().md5().toHexString()
         val cpFilePath = Path("$checkpointDir/$srcHash-$destHash$CHECK_POINT_FILE_SUFFIX_UPLOADER)")
-        val lastModified = Instant.fromEpochSeconds(File(filePath.toString()).lastModified()).format(Format {
-            year()
-            char('-')
-            monthNumber()
-            char('-')
-            day()
-            char('T')
-            hour()
-            char(':')
-            minute()
-            char(':')
-            second()
-            chars("Z")
-        })
+        val lastModified = Instant.fromEpochSeconds(File(filePath.toString()).lastModified()).format(
+            Format {
+                year()
+                char('-')
+                monthNumber()
+                char('-')
+                day()
+                char('T')
+                hour()
+                char(':')
+                minute()
+                char(':')
+                second()
+                chars("Z")
+            }
+        )
 
         val mockHandler = MockHttpClient()
         val config = ClientConfiguration().apply {
@@ -1113,11 +1197,13 @@ class UploaderMockTest {
             })
             mockHandler.failInPartNumber = 4
             val exception = assertFails {
-                uploader.upload(PutObjectRequest {
-                    this.bucket = bucket
-                    this.key = key
-                    body = ByteStream.fromFile(filePath)
-                })
+                uploader.upload(
+                    PutObjectRequest {
+                        this.bucket = bucket
+                        this.key = key
+                        body = ByteStream.fromFile(filePath)
+                    }
+                )
             }
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
@@ -1133,11 +1219,13 @@ class UploaderMockTest {
             assertEquals(lastModified, info.data.fileMeta.lastModified)
 
             assertEquals(0, mockHandler.deleteUploadId.size)
-            uploader.abortUpload(PutObjectRequest {
-                this.bucket = bucket
-                this.key = key
-                body = ByteStream.fromFile(filePath)
-            })
+            uploader.abortUpload(
+                PutObjectRequest {
+                    this.bucket = bucket
+                    this.key = key
+                    body = ByteStream.fromFile(filePath)
+                }
+            )
             assertFalse(SystemFileSystem.exists(cpFilePath))
             assertTrue(mockHandler.deleteUploadId.contains("uploadId-1234"))
         }

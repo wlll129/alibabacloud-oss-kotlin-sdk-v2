@@ -40,6 +40,7 @@ internal object Defaults {
     const val CHECK_POINT_FILE_SUFFIX_UPLOADER = ".ucp"
     const val CHECK_POINT_FILE_SUFFIX_DOWNLOADER = ".dcp"
     const val TEMP_FILE_SUFFIX = ".temp"
+
     // defaults for retryer
     const val MAX_ATTEMPTS: Int = 3
     val MAX_BACKOFF: Duration = 20.toDuration(DurationUnit.SECONDS)

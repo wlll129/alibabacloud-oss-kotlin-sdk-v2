@@ -117,10 +117,12 @@ internal class DownloadCheckpoint(
             return false
         }
 
-        if (!(info.data.objectInfo == this.info.data.objectInfo &&
-                info.data.objectMeta == this.info.data.objectMeta &&
-                info.data.filePath == this.info.data.filePath &&
-                info.data.partSize == this.info.data.partSize)
+        if (!(
+                info.data.objectInfo == this.info.data.objectInfo &&
+                    info.data.objectMeta == this.info.data.objectMeta &&
+                    info.data.filePath == this.info.data.filePath &&
+                    info.data.partSize == this.info.data.partSize
+                )
         ) {
             return false
         }
@@ -149,9 +151,9 @@ internal class DownloadCheckpoint(
             return false
         }
 
-        //valid data
+        // valid data
         if (verifyData && info.data.downloadInfo?.crc != 0.toLong()) {
-            val bufferSize = 4 * 1024;
+            val bufferSize = 4 * 1024
             var offset: Long = 0
             val end = downloadInfo.offset - rOffset
             val crc64 = Crc64(0)
