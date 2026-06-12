@@ -210,7 +210,7 @@ class DownloaderMockTest {
         val data = Random.nextBytes(1234)
         val bucket = "bucket"
         val key = "key"
-        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
+        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-loop-single-part-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
         }
@@ -262,7 +262,7 @@ class DownloaderMockTest {
         val data = Random.nextBytes(63)
         val bucket = "bucket"
         val key = "key"
-        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
+        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-loop-single-part-range-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
         }
@@ -369,7 +369,7 @@ class DownloaderMockTest {
         val data = Random.nextBytes(1234)
         val bucket = "bucket"
         val key = "key"
-        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
+        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-loop-parallel-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
         }
@@ -421,7 +421,7 @@ class DownloaderMockTest {
         val data = Random.nextBytes(63)
         val bucket = "bucket"
         val key = "key"
-        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
+        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-loop-parallel-range-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
         }
@@ -527,7 +527,7 @@ class DownloaderMockTest {
         val data = Random.nextBytes(3 * DOWNLOAD_PART_SIZE + 1234)
         val bucket = "bucket"
         val key = "key"
-        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
+        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-single-without-temp-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
         }
@@ -581,7 +581,7 @@ class DownloaderMockTest {
         val data = Random.nextBytes(3 * DOWNLOAD_PART_SIZE + 1234)
         val bucket = "bucket"
         val key = "key"
-        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
+        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-invalid-part-size-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
         }
@@ -728,7 +728,7 @@ class DownloaderMockTest {
         val data = Random.nextBytes(1234)
         val bucket = "bucket"
         val key = "key"
-        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/check-point-to-check-no-surfix")
+        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-enable-check-point")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
         }
@@ -878,8 +878,8 @@ class DownloaderMockTest {
         val rs = 5
         val rCount = 832
         val lastModified = Clock.System.now().format(DateTimeComponents.Formats.RFC_1123)
-        val localFilePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/check-point-to-check-no-suffix")
-        val localFilePathTemp = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/check-point-to-check-no-suffix.temp")
+        val localFilePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-enable-check-point-range")
+        val localFilePathTemp = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-enable-check-point-range.temp")
         val cpFileName = "0fbbf3bb7c80debbecb37dca52a646eb-${localFilePathTemp.toString().toByteArray().md5().toHexString()}.dcp"
         val cpFilePath = Path("${System.getProperty("user.home")}/OSS/$cpFileName")
         if (!SystemFileSystem.exists(localFilePath.parent!!)) {
@@ -919,6 +919,7 @@ class DownloaderMockTest {
                     localFilePath
                 )
             }
+            exception.printStackTrace()
             assertTrue(exception.cause is ServiceException)
             assertEquals(403, (exception.cause as ServiceException).statusCode)
 
@@ -1103,7 +1104,7 @@ class DownloaderMockTest {
         val data = Random.nextBytes(5 * 100 * 1024 + 1234)
         val bucket = "bucket"
         val key = "key"
-        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
+        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-download-resume-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
         }
