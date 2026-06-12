@@ -20,6 +20,15 @@ tasks.withType<KotlinCompile> {
     }
 }
 
+tasks.withType<AbstractTestTask>().configureEach {
+    testLogging {
+        events("failed")
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+    }
+}
+
 kotlin {
     explicitApi()
 
