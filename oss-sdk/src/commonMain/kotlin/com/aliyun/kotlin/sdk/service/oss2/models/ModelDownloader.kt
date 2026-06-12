@@ -194,6 +194,8 @@ internal class DownloadCheckpoint(
     }
 
     fun remove() {
-        SystemFileSystem.delete(cpFilePath)
+        if (SystemFileSystem.exists(cpFilePath)) {
+            SystemFileSystem.delete(cpFilePath)
+        }
     }
 }

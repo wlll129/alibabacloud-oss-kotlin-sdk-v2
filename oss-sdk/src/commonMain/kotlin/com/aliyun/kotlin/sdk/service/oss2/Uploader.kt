@@ -183,7 +183,7 @@ internal class UploaderDelegate(
             SystemFileSystem.createDirectories(cpFileDir)
         }
 
-        val cpFilePath = "$cpFileDir/$srcHash-$destHash$CHECK_POINT_FILE_SUFFIX_UPLOADER)"
+        val cpFilePath = "$cpFileDir/$srcHash-$destHash$CHECK_POINT_FILE_SUFFIX_UPLOADER"
 
         val metadata = SystemFileSystem.metadataOrNull(filePath)
         val size = metadata?.size ?: throw OperationException("Cannot get file size")

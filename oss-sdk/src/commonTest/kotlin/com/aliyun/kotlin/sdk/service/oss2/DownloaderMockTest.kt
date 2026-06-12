@@ -29,6 +29,7 @@ import kotlinx.serialization.json.Json
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
@@ -43,6 +44,19 @@ private fun String.asByteStream(): ByteStream = ByteStream.fromString(this)
 private fun ByteArray.asByteStream(): ByteStream = ByteStream.fromBytes(this)
 
 class DownloaderMockTest {
+
+    @BeforeTest
+    fun cleanup() {
+        val base = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download")
+        if (SystemFileSystem.exists(base)) {
+            SystemFileSystem.list(base).forEach { name ->
+                val path = Path("$base/$name")
+                if (SystemFileSystem.exists(path)) {
+                    SystemFileSystem.delete(path)
+                }
+            }
+        }
+    }
 
     internal class MockHttpClient @OptIn(ExperimentalTime::class) constructor(
         val data: ByteArray,

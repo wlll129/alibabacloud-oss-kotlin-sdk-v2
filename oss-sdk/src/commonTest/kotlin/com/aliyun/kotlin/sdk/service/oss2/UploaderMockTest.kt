@@ -801,7 +801,7 @@ class UploaderMockTest {
         val name = "$bucket/$key"
         val destHash = "oss://${XmlUtils.escapeText(name)}".toByteArray().md5().toHexString()
         val srcHash = filePath.toString().toByteArray().md5().toHexString()
-        val cpFilePath = Path("$checkpointDir/$srcHash-$destHash$CHECK_POINT_FILE_SUFFIX_UPLOADER)")
+        val cpFilePath = Path("$checkpointDir/$srcHash-$destHash$CHECK_POINT_FILE_SUFFIX_UPLOADER")
         val lastModified = Instant.fromEpochMilliseconds(File(filePath.toString()).lastModified()).format(
             Format {
                 year()
@@ -1164,7 +1164,7 @@ class UploaderMockTest {
         val name = "$bucket/$key"
         val destHash = "oss://${XmlUtils.escapeText(name)}".toByteArray().md5().toHexString()
         val srcHash = filePath.toString().toByteArray().md5().toHexString()
-        val cpFilePath = Path("$checkpointDir/$srcHash-$destHash$CHECK_POINT_FILE_SUFFIX_UPLOADER)")
+        val cpFilePath = Path("$checkpointDir/$srcHash-$destHash$CHECK_POINT_FILE_SUFFIX_UPLOADER")
         val lastModified = Instant.fromEpochMilliseconds(File(filePath.toString()).lastModified()).format(
             Format {
                 year()
