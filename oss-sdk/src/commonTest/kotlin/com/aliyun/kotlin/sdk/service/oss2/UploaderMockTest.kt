@@ -794,7 +794,7 @@ class UploaderMockTest {
     @OptIn(ExperimentalTime::class)
     @Test
     fun testUploadEnableCheckpointUseCp() = runTest {
-        val filePath = createTestFile("file", 10 * 1024 * 1024)
+        val filePath = createTestFile("test-usecp-file", 10 * 1024 * 1024)
         val checkpointDir = Path("$SystemTemporaryDirectory/oss-kotlin-sdk-test/checkpoint/")
         val bucket = "bucket"
         val key = "key"
@@ -1157,7 +1157,7 @@ class UploaderMockTest {
     @OptIn(ExperimentalTime::class)
     @Test
     fun testAbortUpload() = runTest {
-        val filePath = createTestFile("file", 10 * 1024 * 1024)
+        val filePath = createTestFile("test-abort-file", 10 * 1024 * 1024)
         val checkpointDir = "${System.getProperty("user.home")}/OSS"
         val bucket = "bucket"
         val key = "key"
@@ -1230,6 +1230,6 @@ class UploaderMockTest {
             assertTrue(mockHandler.deleteUploadId.contains("uploadId-1234"))
         }
 
-        removeTestFile("file")
+        removeTestFile("test-abort-file")
     }
 }

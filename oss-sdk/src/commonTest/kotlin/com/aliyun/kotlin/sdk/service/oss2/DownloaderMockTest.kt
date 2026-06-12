@@ -1031,7 +1031,7 @@ class DownloaderMockTest {
         val data = Random.nextBytes(5 * 100 * 1024 + 1234)
         val bucket = "bucket"
         val key = "key"
-        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
+        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-check-crc-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
         }
