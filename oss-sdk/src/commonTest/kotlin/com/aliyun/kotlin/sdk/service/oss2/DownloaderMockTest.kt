@@ -849,6 +849,9 @@ class DownloaderMockTest {
             if (SystemFileSystem.exists(localFilePath)) {
                 SystemFileSystem.delete(localFilePath)
             }
+            if (SystemFileSystem.exists(cpFilePath)) {
+                SystemFileSystem.delete(cpFilePath)
+            }
         }
     }
 
@@ -1291,6 +1294,9 @@ class DownloaderMockTest {
             if (SystemFileSystem.exists(localFilePath)) {
                 SystemFileSystem.delete(localFilePath)
             }
+            if (SystemFileSystem.exists(cpFilePath)) {
+                SystemFileSystem.delete(cpFilePath)
+            }
 
             // parallel
             totalBytesTransferred = 0
@@ -1366,6 +1372,9 @@ class DownloaderMockTest {
 
             if (SystemFileSystem.exists(localFilePath)) {
                 SystemFileSystem.delete(localFilePath)
+            }
+            if (SystemFileSystem.exists(cpFilePath)) {
+                SystemFileSystem.delete(cpFilePath)
             }
         }
     }

@@ -302,7 +302,7 @@ internal class DownloadDelegate {
                             written += dChunk.size
                             mutex.withLock {
                                 cpChunks.add(dChunk)
-                                cpChunks.sortedBy { it.start }
+                                cpChunks = cpChunks.sortedBy { it.start }.toMutableList()
 
                                 var newOffset = tOffset
                                 var i = 0

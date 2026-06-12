@@ -200,7 +200,7 @@ internal class UploaderDelegate(
                     partSize,
                     UploadCheckpoint.Info.Data.FileMeta(
                         size,
-                        Instant.fromEpochSeconds(lastModified).format(
+                        Instant.fromEpochMilliseconds(lastModified).format(
                             Format {
                                 year()
                                 char('-')
