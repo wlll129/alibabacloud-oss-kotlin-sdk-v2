@@ -314,6 +314,7 @@ class UploaderMockTest {
                     .toMutableMap()
             }
 
+            print("error")
             return mutableMapOf()
         }
     }
