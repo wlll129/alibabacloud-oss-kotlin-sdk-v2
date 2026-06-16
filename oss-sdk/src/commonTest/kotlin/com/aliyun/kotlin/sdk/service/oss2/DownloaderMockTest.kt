@@ -8,6 +8,8 @@ import com.aliyun.kotlin.sdk.service.oss2.exceptions.RequestException
 import com.aliyun.kotlin.sdk.service.oss2.exceptions.ServiceException
 import com.aliyun.kotlin.sdk.service.oss2.hash.Crc64
 import com.aliyun.kotlin.sdk.service.oss2.hash.md5
+import com.aliyun.kotlin.sdk.service.oss2.logging.LogAgentFactory
+import com.aliyun.kotlin.sdk.service.oss2.logging.LogAgentLevel
 import com.aliyun.kotlin.sdk.service.oss2.models.DownloadCheckpoint.Info
 import com.aliyun.kotlin.sdk.service.oss2.models.GetObjectRequest
 import com.aliyun.kotlin.sdk.service.oss2.models.HttpRange
@@ -163,7 +165,7 @@ class DownloaderMockTest {
     fun testDownloadSinglePart() = runTest {
         val data = Random.nextBytes(3 * 1024 * 1024 + 1234)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -209,7 +211,7 @@ class DownloaderMockTest {
     fun testDownloadLoopSinglePart() = runTest {
         val data = Random.nextBytes(1234)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-loop-single-part-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -261,7 +263,7 @@ class DownloaderMockTest {
     fun testDownloadLoopSinglePartWithRange() = runTest {
         val data = Random.nextBytes(63)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-loop-single-part-range-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -319,7 +321,7 @@ class DownloaderMockTest {
     fun testDownloadParallel() = runTest {
         val data = Random.nextBytes(3 * 1024 * 1024 + 1234)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -368,7 +370,7 @@ class DownloaderMockTest {
     fun testDownloadLoopParallel() = runTest {
         val data = Random.nextBytes(1234)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-loop-parallel-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -420,7 +422,7 @@ class DownloaderMockTest {
     fun testDownloadLoopParallelWithRange() = runTest {
         val data = Random.nextBytes(63)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-loop-parallel-range-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -526,7 +528,7 @@ class DownloaderMockTest {
     fun testDownloadSinglePartWithoutTempFile() = runTest {
         val data = Random.nextBytes(3 * DOWNLOAD_PART_SIZE + 1234)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-single-without-temp-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -580,7 +582,7 @@ class DownloaderMockTest {
     fun testDownloadSinglePartWithInvalidPartSizeAndParallelNum() = runTest {
         val data = Random.nextBytes(3 * DOWNLOAD_PART_SIZE + 1234)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-invalid-part-size-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -593,6 +595,10 @@ class DownloaderMockTest {
             region = "cn-hangzhou"
             credentialsProvider = StaticCredentialsProvider("ak", "sk")
             httpTransport = mockHandler
+            logger = LogAgentFactory.logger("OSSClient", LogAgentLevel.TRACE)
+        }
+        LogAgentFactory.logger("", LogAgentLevel.DEBUG).debug {
+            "test log"
         }
 
         OSSClient.create(config).use { client ->
@@ -630,7 +636,7 @@ class DownloaderMockTest {
     fun testDownloadWhenFileSizeLessPartSize() = runTest {
         val data = Random.nextBytes(1234)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -680,7 +686,7 @@ class DownloaderMockTest {
     fun testDownloadFileWillChange() = runTest {
         val data = Random.nextBytes(1234)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -727,7 +733,7 @@ class DownloaderMockTest {
     fun testDownloadEnableCheckpointNormal() = runTest {
         val data = Random.nextBytes(1234)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-enable-check-point")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -972,7 +978,7 @@ class DownloaderMockTest {
     fun testDownloadWithError() = runTest {
         val data = Random.nextBytes(3 * 1024 * 1024 + 1234)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -1031,7 +1037,7 @@ class DownloaderMockTest {
     fun testDownloadCheckCRC() = runTest {
         val data = Random.nextBytes(5 * 100 * 1024 + 1234)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-check-crc-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -1103,7 +1109,7 @@ class DownloaderMockTest {
     fun testDownloadCheckCRCWithResume() = runTest {
         val data = Random.nextBytes(5 * 100 * 1024 + 1234)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-download-resume-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -1150,7 +1156,7 @@ class DownloaderMockTest {
     fun testDownloadProgress() = runTest {
         val data = Random.nextBytes(5 * 1024 * 1024 + 123)
         val bucket = "bucket"
-        val key = "key"
+        val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
@@ -1456,5 +1462,12 @@ class DownloaderMockTest {
                 SystemFileSystem.delete(localFilePath)
             }
         }
+    }
+
+    @OptIn(ExperimentalTime::class)
+    fun randomObjectKey(): String {
+        val ticks = Clock.System.now().epochSeconds
+        val value = Random.nextInt(500).toLong()
+        return "kotlin-sdk-test-object-$ticks-$value"
     }
 }
