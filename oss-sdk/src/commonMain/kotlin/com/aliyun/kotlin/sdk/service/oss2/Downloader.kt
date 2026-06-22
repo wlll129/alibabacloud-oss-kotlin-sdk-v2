@@ -410,7 +410,7 @@ internal class DownloadDelegate {
             } else {
                 null
             }
-            val writeLength = fileWriter.writeAt(chunk.start - chunk.rStart, stream, observers)
+            val writeLength = fileWriter.writeAt(chunk.start - chunk.rStart, stream, observers, logger)
             if (writeLength == chunk.size) {
                 return DownloadedChunk(
                     chunk.start,
@@ -449,7 +449,8 @@ internal class FileWriter(
     suspend fun writeAt(
         position: Long,
         stream: ByteStream,
-        observers: List<StreamObserver>
+        observers: List<StreamObserver>,
+        logger: LogAgent?
     ): Long {
         mutex.withLock {
             raf.seek(position)
@@ -457,6 +458,7 @@ internal class FileWriter(
             stream.toFlow().collect {
                 size += it.size
                 raf.write(it)
+                logger?.debug { "write data ${it.decodeToString()}" }
                 for (observer in observers) {
                     observer.data(it, 0, it.size)
                 }
