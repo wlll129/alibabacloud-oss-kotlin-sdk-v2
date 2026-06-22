@@ -420,7 +420,7 @@ class DownloaderMockTest {
 
     @Test
     fun testDownloadLoopParallelWithRange() = runTest {
-        val data = Random.nextBytes(63)
+        val data = "abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0".toByteArray()//Random.nextBytes(63)
         val bucket = "bucket"
         val key = randomObjectKey()
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-loop-parallel-range-file")
@@ -462,8 +462,10 @@ class DownloaderMockTest {
                         val expectLen = min(data.size - rs, rCount)
                         assertEquals(expectLen.toLong(), result.written)
                         SystemFileSystem.source(filePath).buffered().use { source ->
-                            val destinationMD5 = source.readByteArray().md5().toHexString()
+                            val bytes = source.readByteArray()
+                            val destinationMD5 = bytes.md5().toHexString()
                             val sourceMD5 = data.copyOfRange(rs, min(rs + rCount, data.size)).md5().toHexString()
+                            assertEquals(data.copyOfRange(rs, min(rs + rCount, data.size)).decodeToString(), bytes.decodeToString())
                             assertEquals(sourceMD5, destinationMD5)
                         }
                     }
