@@ -435,6 +435,7 @@ class DownloaderMockTest {
             region = "cn-hangzhou"
             credentialsProvider = StaticCredentialsProvider("ak", "sk")
             httpTransport = mockHandler
+            logger = LogAgentFactory.logger("OSSClient", LogAgentLevel.TRACE)
         }
 
         OSSClient.create(config).use { client ->
@@ -597,10 +598,6 @@ class DownloaderMockTest {
             region = "cn-hangzhou"
             credentialsProvider = StaticCredentialsProvider("ak", "sk")
             httpTransport = mockHandler
-            logger = LogAgentFactory.logger("OSSClient", LogAgentLevel.TRACE)
-        }
-        LogAgentFactory.logger("", LogAgentLevel.DEBUG).debug {
-            "test log"
         }
 
         OSSClient.create(config).use { client ->

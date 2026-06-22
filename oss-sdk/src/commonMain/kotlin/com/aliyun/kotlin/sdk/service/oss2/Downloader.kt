@@ -11,6 +11,7 @@ import com.aliyun.kotlin.sdk.service.oss2.exceptions.ResponseException
 import com.aliyun.kotlin.sdk.service.oss2.hash.CRC64Observer
 import com.aliyun.kotlin.sdk.service.oss2.hash.combine
 import com.aliyun.kotlin.sdk.service.oss2.hash.md5
+import com.aliyun.kotlin.sdk.service.oss2.logging.LogAgent
 import com.aliyun.kotlin.sdk.service.oss2.models.DownloadCheckpoint
 import com.aliyun.kotlin.sdk.service.oss2.models.DownloadRange
 import com.aliyun.kotlin.sdk.service.oss2.models.DownloadResult
@@ -35,6 +36,7 @@ import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import java.io.File
 import java.io.RandomAccessFile
+import kotlin.math.log
 import kotlin.math.min
 
 public class Downloader {
@@ -42,11 +44,14 @@ public class Downloader {
     private val client: OSSClient
     private val options: DownloaderOptions
 
+    private val logger: LogAgent?
+
     public constructor(
         client: OSSClient,
         vararg actions: (DownloaderOptions) -> Unit
     ) {
         this.client = client
+        this.logger = (client as? DefaultOSSClient)?.clientImpl?.innerOptions?.logger
         val options = DownloaderOptions(
             DOWNLOAD_PART_SIZE,
             DOWNLOAD_PARALLEL,
@@ -78,7 +83,7 @@ public class Downloader {
             opt.parallelNum = DOWNLOAD_PARALLEL
         }
 
-        val delegate = DownloadDelegate(client, opt, request)
+        val delegate = DownloadDelegate(client, opt, request, logger)
         return delegate.download(filePath)
     }
 
@@ -89,7 +94,7 @@ public class Downloader {
         requireNotNull(request.bucket) { "request.bucket is required" }
         requireNotNull(request.key) { "request.key is required" }
 
-        val delegate = DownloadDelegate(client, options, request)
+        val delegate = DownloadDelegate(client, options, request, logger)
         delegate.abortDownload(filePath)
     }
 }
@@ -100,16 +105,20 @@ internal class DownloadDelegate {
     private var options: DownloaderOptions
     private val request: GetObjectRequest
 
+    private val logger: LogAgent?
+
     val tempFileDir = Path("${System.getProperty("user.home")}/OSS")
 
     constructor(
         client: OSSClient,
         options: DownloaderOptions,
-        request: GetObjectRequest
+        request: GetObjectRequest,
+        logger: LogAgent?
     ) {
         this.client = client
         this.options = options
         this.request = request
+        this.logger = logger
 
         if (this.options.partSize <= 0) {
             this.options.partSize = DOWNLOAD_PART_SIZE
@@ -142,6 +151,7 @@ internal class DownloadDelegate {
         }
 
         val cpFilePath = "$cpFileDir/$srcHash-$destHash$CHECK_POINT_FILE_SUFFIX_DOWNLOADER"
+        logger?.debug { "cp file: $cpFilePath" }
 
         val checkpoint = DownloadCheckpoint(
             cpFileDir,
@@ -177,6 +187,7 @@ internal class DownloadDelegate {
         } else {
             checkpoint.info.data.downloadInfo?.offset = downloadRange.pos
         }
+        logger?.trace { "checkpoint: $checkpoint" }
         return checkpoint
     }
 
@@ -229,6 +240,7 @@ internal class DownloadDelegate {
                 }
             }
         }
+        logger?.debug { "adjustRange: $pos, $ePos, $rStart" }
 
         return DownloadRange(pos, ePos, rStart)
     }
@@ -374,6 +386,7 @@ internal class DownloadDelegate {
         observer: ProgressObserver?,
         calcCRC: Boolean
     ): DownloadedChunk {
+        logger?.debug { "Start download chunk: $chunk" }
         while (true) {
             val result = client.getObjectAsStream(
                 GetObjectRequest {
