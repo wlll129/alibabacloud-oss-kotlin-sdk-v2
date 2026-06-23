@@ -264,9 +264,9 @@ class DownloaderMockTest {
         val data = Random.nextBytes(63)
         val bucket = "bucket"
         val key = randomObjectKey()
-        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-loop-single-part-range-file")
-        if (!SystemFileSystem.exists(filePath.parent!!)) {
-            SystemFileSystem.createDirectories(filePath.parent!!)
+        val fileDir = "$SystemTemporaryDirectory/kotlin-sdk-test/download"
+        if (!SystemFileSystem.exists(Path(fileDir))) {
+            SystemFileSystem.createDirectories(Path(fileDir))
         }
 
         val mockHandler = MockHttpClient(
@@ -284,6 +284,8 @@ class DownloaderMockTest {
             for (rs in 0..<7) {
                 for (rCount in 1..<data.size) {
                     for (i in 1..3) {
+                        val filePath = Path("$fileDir/test-loop-single-part-range-file-$rs-$rCount-$i")
+
                         if (SystemFileSystem.exists(filePath)) {
                             SystemFileSystem.delete(filePath)
                         }
@@ -307,12 +309,11 @@ class DownloaderMockTest {
                             val sourceMD5 = data.copyOfRange(rs, min(rs + rCount, data.size)).md5().toHexString()
                             assertEquals(sourceMD5, destinationMD5)
                         }
+                        if (SystemFileSystem.exists(filePath)) {
+                            SystemFileSystem.delete(filePath)
+                        }
                     }
                 }
-            }
-
-            if (SystemFileSystem.exists(filePath)) {
-                SystemFileSystem.delete(filePath)
             }
         }
     }
@@ -533,6 +534,9 @@ class DownloaderMockTest {
         val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-single-without-temp-file")
         if (!SystemFileSystem.exists(filePath.parent!!)) {
             SystemFileSystem.createDirectories(filePath.parent!!)
+        }
+        if (SystemFileSystem.exists(filePath)) {
+            SystemFileSystem.delete(filePath)
         }
 
         val mockHandler = MockHttpClient(
