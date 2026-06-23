@@ -805,7 +805,6 @@ class DownloaderMockTest {
             credentialsProvider = StaticCredentialsProvider("ak", "sk")
             httpTransport = mockHandler
         }
-        print("")
 
         OSSClient.create(config).use { client ->
             val downloader = Downloader(client, {
