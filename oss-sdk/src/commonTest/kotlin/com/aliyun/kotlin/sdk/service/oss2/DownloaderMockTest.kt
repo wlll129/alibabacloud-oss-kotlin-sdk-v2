@@ -423,10 +423,6 @@ class DownloaderMockTest {
         val data = "abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0".toByteArray()//Random.nextBytes(63)
         val bucket = "bucket"
         val key = randomObjectKey()
-        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-loop-parallel-range-file")
-        if (!SystemFileSystem.exists(filePath.parent!!)) {
-            SystemFileSystem.createDirectories(filePath.parent!!)
-        }
 
         val mockHandler = MockHttpClient(
             data
@@ -435,7 +431,6 @@ class DownloaderMockTest {
             region = "cn-hangzhou"
             credentialsProvider = StaticCredentialsProvider("ak", "sk")
             httpTransport = mockHandler
-            logger = LogAgentFactory.logger("OSSClient", LogAgentLevel.TRACE)
         }
 
         OSSClient.create(config).use { client ->
@@ -444,6 +439,10 @@ class DownloaderMockTest {
             for (rs in 0..<7) {
                 for (rCount in 1..<data.size) {
                     for (i in 1..3) {
+                        val filePath = Path("$SystemTemporaryDirectory/kotlin-sdk-test/download/test-loop-parallel-range-file-$rs-$rCount-$i")
+                        if (!SystemFileSystem.exists(filePath.parent!!)) {
+                            SystemFileSystem.createDirectories(filePath.parent!!)
+                        }
                         if (SystemFileSystem.exists(filePath)) {
                             SystemFileSystem.delete(filePath)
                         }
@@ -469,12 +468,11 @@ class DownloaderMockTest {
                             assertEquals(data.copyOfRange(rs, min(rs + rCount, data.size)).decodeToString(), bytes.decodeToString())
                             assertEquals(sourceMD5, destinationMD5)
                         }
+                        if (SystemFileSystem.exists(filePath)) {
+                            SystemFileSystem.delete(filePath)
+                        }
                     }
                 }
-            }
-
-            if (SystemFileSystem.exists(filePath)) {
-                SystemFileSystem.delete(filePath)
             }
         }
     }
