@@ -18,6 +18,7 @@ kotlinx-cli = "0.3.6"
 ktlint = "14.0.1"
 kotlincrypto = "0.7.0"
 kotlinx-browser = "0.5.0"
+oss-kotlin-sdk = "+"
 
 [libraries]
 
@@ -42,6 +43,8 @@ kotlincrypto-hash-sha2 = { module = "org.kotlincrypto.hash:sha2", version.ref = 
 kotlincrypto-macs-hmac-sha1 = { module = "org.kotlincrypto.macs:hmac-sha1", version.ref = "kotlincrypto" }
 kotlincrypto-macs-hmac-sha2 = { module = "org.kotlincrypto.macs:hmac-sha2", version.ref = "kotlincrypto" }
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
+oss-core = { module = "com.aliyun:kotlin-oss-v2", version.ref = "oss-kotlin-sdk" }
+oss-extension = { module = "com.aliyun:kotlin-oss-v2-extension", version.ref = "oss-kotlin-sdk" }
 
 [plugins]
 
