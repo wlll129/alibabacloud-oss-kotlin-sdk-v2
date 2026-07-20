@@ -60,14 +60,15 @@ internal object OssUtils {
 
         if (input.bucket != null) {
             when (style) {
-                AddressStyleType.Path -> {
+                is AddressStyleType.Path -> {
                     paths.add(input.bucket)
                     if (input.key == null) {
                         paths.add("")
                     }
                 }
-                AddressStyleType.CName -> {}
-                AddressStyleType.VirtualHosted -> host = "${input.bucket}.$host"
+                is AddressStyleType.CName -> {}
+                is AddressStyleType.VirtualHosted -> host = "${input.bucket}.$host"
+                is AddressStyleType.VectorHosted -> host = "${input.bucket}-${style.accountId}.$host"
             }
         }
 

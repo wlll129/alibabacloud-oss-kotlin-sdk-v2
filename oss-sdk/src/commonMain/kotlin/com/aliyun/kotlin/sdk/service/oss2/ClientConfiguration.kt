@@ -7,7 +7,7 @@ import com.aliyun.kotlin.sdk.service.oss2.signer.Signer
 import com.aliyun.kotlin.sdk.service.oss2.transport.HttpTransport
 import kotlin.time.Duration
 
-public class ClientConfiguration(
+public data class ClientConfiguration(
     /**
      * The region in which the bucket is located.
      */
@@ -132,6 +132,11 @@ public class ClientConfiguration(
      * oss log agent
      */
     public var logger: LogAgent? = null,
+
+    /**
+     * The account id
+     */
+    public var accountId: String? = null
 ) {
 
     public companion object {

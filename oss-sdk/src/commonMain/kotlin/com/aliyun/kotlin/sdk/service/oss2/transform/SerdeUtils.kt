@@ -10,6 +10,15 @@ import com.aliyun.kotlin.sdk.service.oss2.types.ByteStream
 import com.aliyun.kotlin.sdk.service.oss2.types.FileContent
 import com.aliyun.kotlin.sdk.service.oss2.utils.Base64Utils
 import com.aliyun.kotlin.sdk.service.oss2.utils.MimeUtils
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.modules.SerializersModule
 
 internal object SerdeUtils {
 
@@ -78,5 +87,15 @@ internal object SerdeUtils {
             throw DeserializationException("Not found tag <$rootName>")
         }
         return root
+    }
+
+    inline fun <reified T> deserializeJsonBody(data: ByteArray?): T {
+        return data?.let {
+            Json.decodeFromString<T>(it.decodeToString())
+        } ?: throw DeserializationException("body is null")
+    }
+
+    inline fun <reified T> serializeJsonBody(value: T): ByteArray {
+        return Json.encodeToString(value).toByteArray()
     }
 }

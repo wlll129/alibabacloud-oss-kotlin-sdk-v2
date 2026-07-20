@@ -7,6 +7,7 @@ import com.aliyun.kotlin.sdk.service.oss2.serialization.xml.dom.XmlNode
 import com.aliyun.kotlin.sdk.service.oss2.transport.ResponseMessage
 import com.aliyun.kotlin.sdk.service.oss2.types.toByteArray
 import com.aliyun.kotlin.sdk.service.oss2.utils.Base64Utils
+import kotlinx.serialization.json.Json
 import kotlin.math.min
 
 public interface ResponseHandler {
@@ -54,13 +55,21 @@ internal class ServiceErrorResponseHandler : ResponseHandler {
 
         try {
             if (data.isNotEmpty()) {
-                val root = XmlNode.parse(data)
-                if (root.name.local == "Error") {
-                    root.children.forEach { (k, v) ->
-                        errorFields.put(k, v.first().text ?: "")
+                if (headers["Content-Type"] == "application/xml") {
+                    val root = XmlNode.parse(data)
+                    if (root.name.local == "Error") {
+                        root.children.forEach { (k, v) ->
+                            errorFields.put(k, v.first().text ?: "")
+                        }
+                    } else {
+                        errorFields.put("Message", toErrorMessage("Not found tag <Error>", data))
                     }
+                } else if (headers["Content-Type"] == "application/json") {
+                    val root = Json.decodeFromString<Map<String, Map<String, String>>>(data.decodeToString())
+                    val error = root["Error"] ?: mapOf("Message" to toErrorMessage("Not found tag <Error>", data))
+                    errorFields.putAll(error)
                 } else {
-                    errorFields.put("Message", toErrorMessage("Not found tag <Error>", data))
+                    errorFields.put("Message", toErrorMessage("The body is not in XML or JSON format", data))
                 }
             } else {
                 errorFields.put("Message", toErrorMessage("Empty body", data))
