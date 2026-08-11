@@ -7,15 +7,15 @@ kotlin {
     jvmToolchain(17)
     jvm()
     androidTarget()
-    js {
-        nodejs {
-            testTask {
-                useMocha {
-                    timeout = "60s"
-                }
-            }
-        }
-    }
+//    js {
+//        nodejs {
+//            testTask {
+//                useMocha {
+//                    timeout = "60s"
+//                }
+//            }
+//        }
+//    }
 
     iosArm64()
     iosSimulatorArm64()
@@ -44,9 +44,9 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
         }
 
-        jsTest.dependencies {
-            implementation(libs.ktor.client.js)
-        }
+//        jsTest.dependencies {
+//            implementation(libs.ktor.client.js)
+//        }
     }
 }
 

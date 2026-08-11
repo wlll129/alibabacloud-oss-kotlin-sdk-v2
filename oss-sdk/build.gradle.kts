@@ -35,22 +35,25 @@ kotlin {
 
     jvm()
 
-    js {
-        nodejs()
-        browser()
-    }
+//    js {
+//        nodejs()
+//        browser()
+//    }
 
     iosArm64()
     iosSimulatorArm64()
     macosArm64()
 
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
-    wasmJs {
-        nodejs()
-        browser()
-    }
+//    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+//    wasmJs {
+//        nodejs()
+//        browser()
+//    }
 
     jvmToolchain(17)
+
+    ohosArm64()
+//    ohosX64()
 
     applyDefaultHierarchyTemplate()
 
@@ -90,6 +93,12 @@ kotlin {
             dependencies {
                 implementation(libs.ktor.client.core)
                 implementation(libs.kotlincrypto.hash.md)
+            }
+        }
+
+        val nonOhosCommonMain by creating {
+            dependsOn(nonJvmCommonMain)
+            dependencies {
                 implementation(libs.kotlincrypto.hash.sha1)
                 implementation(libs.kotlincrypto.hash.sha2)
                 implementation(libs.kotlincrypto.macs.hmac.sha1)
@@ -97,49 +106,69 @@ kotlin {
             }
         }
 
-        val jsMain by getting {
-            dependsOn(nonJvmCommonMain)
-            dependencies {
-                implementation(libs.ktor.client.js)
-            }
-        }
-
-        val wasmJsMain by getting {
-            dependsOn(nonJvmCommonMain)
-            dependencies {
-                implementation(libs.ktor.client.js)
-                implementation(libs.kotlinx.browser)
-            }
-        }
+//        val jsMain by getting {
+//            dependsOn(nonOhosCommonMain)
+//            dependencies {
+//                implementation(libs.ktor.client.js)
+//            }
+//        }
+//
+//        val wasmJsMain by getting {
+//            dependsOn(nonJvmCommonMain)
+//            dependencies {
+//                implementation(libs.ktor.client.js)
+//                implementation(libs.kotlinx.browser)
+//            }
+//        }
 
         val appleMain by getting {
-            dependsOn(nonJvmCommonMain)
+            dependsOn(nonOhosCommonMain)
             dependencies {
                 implementation(libs.ktor.client.darwin)
             }
         }
+
+        val ohosCommonMain by creating {
+            dependsOn(nonJvmCommonMain)
+            dependencies {
+                implementation(libs.ktor.client.cio)
+                implementation(libs.kotlinx.crypto.hmac)
+                implementation(libs.kotlinx.crypto.sha1)
+                implementation(libs.kotlinx.crypto.sha2)
+            }
+        }
+        val ohosArm64Main by getting {
+            dependsOn(ohosCommonMain)
+        }
+//        val ohosX64Main by getting {
+//            dependsOn(ohosCommonMain)
+//        }
 
         commonTest.dependencies {
             implementation(libs.kotlinx.coroutines.test)
             implementation(kotlin("test"))
         }
 
-        val nonJvmCommonTest by creating {
-            dependsOn(commonTest.get())
-        }
-
-        val jsTest by getting {
-            dependsOn(nonJvmCommonTest)
-        }
-
-        val wasmJsTest by getting {
-            dependsOn(nonJvmCommonTest)
-        }
-
         jvmTest.dependencies {
             implementation(kotlin("test-junit"))
             implementation(libs.okhttp.mockwebserver)
         }
+
+        val nonJvmCommonTest by creating {
+            dependsOn(commonTest.get())
+        }
+
+//        val jsTest by getting {
+//            dependsOn(nonJvmCommonTest)
+//        }
+//
+//        val wasmJsTest by getting {
+//            dependsOn(nonJvmCommonTest)
+//        }
+
+//        val ohosArm64Test by getting {
+//            dependsOn(commonTest.get())
+//        }
 
         androidUnitTest.dependencies {
             implementation(kotlin("test"))

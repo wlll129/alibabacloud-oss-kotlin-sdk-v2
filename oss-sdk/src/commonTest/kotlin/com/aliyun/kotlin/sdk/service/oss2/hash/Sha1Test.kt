@@ -51,6 +51,7 @@ class Sha1Test {
         assertShaHexEqual(input, expected, 1_000_000)
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     @Test
     fun testPangramSha1() {
         assertEquals(

@@ -28,22 +28,25 @@ kotlin {
 
     jvm()
 
-    js {
-        nodejs()
-        browser()
-    }
-
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
-    wasmJs {
-        nodejs()
-        browser()
-    }
+//    js {
+//        nodejs()
+//        browser()
+//    }
+//
+//    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+//    wasmJs {
+//        nodejs()
+//        browser()
+//    }
 
     iosArm64()
     iosSimulatorArm64()
     macosArm64()
 
     jvmToolchain(17)
+
+    ohosArm64()
+//    ohosX64()
 
     applyDefaultHierarchyTemplate()
 

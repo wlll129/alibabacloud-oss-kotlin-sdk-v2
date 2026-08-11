@@ -5,10 +5,10 @@ plugins {
 kotlin {
     jvmToolchain(17)
     jvm()
-    js {
-        nodejs()
-        binaries.executable()
-    }
+//    js {
+//        nodejs()
+//        binaries.executable()
+//    }
 
     macosArm64() {
         binaries {
@@ -29,9 +29,9 @@ kotlin {
             implementation(project(":oss-sdk"))
         }
 
-        jsMain.dependencies {
-            implementation(libs.ktor.client.js)
-        }
+//        jsMain.dependencies {
+//            implementation(libs.ktor.client.js)
+//        }
     }
 }
 

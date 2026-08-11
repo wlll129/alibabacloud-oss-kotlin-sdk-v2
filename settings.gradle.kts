@@ -2,8 +2,9 @@ rootProject.name = "alibabaCloud-oss-kotlin-sdk-v2"
 
 pluginManagement {
     repositories {
+        maven("https://maven.eazytec-cloud.com/nexus/repository/maven-releases/")
         google {
-            content { 
+            content {
               	includeGroupByRegex("com\\.android.*")
               	includeGroupByRegex("com\\.google.*")
               	includeGroupByRegex("androidx.*")
@@ -17,6 +18,7 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
+        maven("https://maven.eazytec-cloud.com/nexus/repository/maven-releases/")
         google {
             content { 
               	includeGroupByRegex("com\\.android.*")
