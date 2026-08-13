@@ -28,12 +28,14 @@ internal class GetAgenticBucket :
         description = "The short name of the agentic bucket"
     ).required()
     val argEndpoint by option(ArgType.String, fullName = "endpoint", description = "Endpoint")
+    val argUseVirtualHostedAlias by option(ArgType.Boolean, fullName = "useVirtualHostedAlias", description = "useVirtualHostedAlias")
 
     override suspend fun executeCommand() {
         AgenticBucketClient(ClientConfiguration.loadDefault().apply {
             this.region = argRegion
             this.endpoint = argEndpoint
             this.accountId = argAccountId
+            this.useVirtualHostedAlias = argUseVirtualHostedAlias
             credentialsProvider = EnvironmentVariableCredentialsProvider()
         }).use { client ->
             val res = client.getAgenticBucket(GetAgenticBucketRequest {
