@@ -33,6 +33,7 @@ internal class CreateBucketSpace :
         description = "The short name of the agentic bucket that the bucket space belongs to"
     ).required()
     val argEndpoint by option(ArgType.String, fullName = "endpoint", description = "Endpoint")
+    val argUseVirtualHostedAlias by option(ArgType.Boolean, fullName = "useVirtualHostedAlias", description = "useVirtualHostedAlias")
 
     override suspend fun executeCommand() {
         // The bucket space client resolves the short bucket name to its physical form
@@ -41,6 +42,7 @@ internal class CreateBucketSpace :
             this.region = argRegion
             this.endpoint = argEndpoint
             this.accountId = argAccountId
+            this.useVirtualHostedAlias = argUseVirtualHostedAlias
             credentialsProvider = EnvironmentVariableCredentialsProvider()
         }).use { client ->
             // The bucket space must be created under an agentic bucket, identified by its

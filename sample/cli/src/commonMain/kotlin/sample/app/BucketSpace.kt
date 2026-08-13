@@ -39,12 +39,14 @@ internal class BucketSpace :
         description = "The full path of the object."
     ).required()
     val argEndpoint by option(ArgType.String, fullName = "endpoint", description = "Endpoint")
+    val argUseVirtualHostedAlias by option(ArgType.Boolean, fullName = "useVirtualHostedAlias", description = "useVirtualHostedAlias")
 
     override suspend fun executeCommand() {
         val config = ClientConfiguration.loadDefault().apply {
             this.region = argRegion
             this.endpoint = argEndpoint
             this.accountId = argAccountId
+            this.useVirtualHostedAlias = argUseVirtualHostedAlias
             credentialsProvider = EnvironmentVariableCredentialsProvider()
         }
 
